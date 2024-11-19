@@ -1,9 +1,10 @@
 from ursina import *
+import helper
 from ursina.prefabs.first_person_controller import FirstPersonController
 
 # Initialize the app
 app = Ursina()
-window.exit_button.visible = True # Show the Red X button
+window.exit_button.visible = True # Show the Red X window close button
 
 # Load block textures
 block_textures = {
