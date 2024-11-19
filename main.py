@@ -1,5 +1,4 @@
 from ursina import *
-import test
 from ursina.prefabs.first_person_controller import FirstPersonController
 
 # Initialize the app
@@ -14,6 +13,7 @@ block_textures = {
     "bedrock": load_texture("minecraft_starter/assets/textures/stone07.png"),
     "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
     "water": load_texture("minecraft_starter/assets/textures/water.png"),
+    "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png")
     # Add other block textures if needed
 }
 
@@ -30,13 +30,12 @@ class Block(Entity):
         )
         self.block_type = block_type
 
-selected_block = "Emission"
 
 mini_block = Entity(
   parent=camera,
-  model="assets/models/Torch",
-  texture=block_textures.get(selected_block),
-  scale=0.2,
+  model="minecraft_starter/assets/models/Torch",
+  texture=block_textures.get("torch"),
+  scale= 0.2,
   position=(0.35, -0.25, 0.5),
   rotation=(-15, -30, -5)
   )
