@@ -40,7 +40,7 @@ mini_block = Entity(
   rotation=(-15, -30, -5)
   )
 # World settings
-world_size = 20    # This creates a world with 100,489 blocks
+world_size = 317    # This creates a world with 100,489 blocks
 render_distance = 8 # reduce this value if you have a slow computer
                     # Render Distance of 8 will render 8x8 blocks around the player
                     # In order to prevent FPS drop and lag, keep the render distance low
