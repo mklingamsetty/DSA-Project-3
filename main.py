@@ -1,5 +1,5 @@
 from ursina import *
-import helper
+import test
 from ursina.prefabs.first_person_controller import FirstPersonController
 
 # Initialize the app
@@ -10,8 +10,10 @@ window.exit_button.visible = True # Show the Red X window close button
 block_textures = {
     "grass": load_texture("minecraft_starter/assets/textures/groundEarth.png"),
     "dirt": load_texture("minecraft_starter/assets/textures/groundMud.png"),
-    "stone": load_texture("minecraft_starter/assets/textures/wallStone.png"),
-    "bedrock": load_texture("minecraft_starter/assets/textures/stone07.png")
+    "stone": load_texture("minecraft_starter/assets/textures/Stone01.png"),
+    "bedrock": load_texture("minecraft_starter/assets/textures/stone07.png"),
+    "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
+    "water": load_texture("minecraft_starter/assets/textures/water.png"),
     # Add other block textures if needed
 }
 
@@ -28,8 +30,18 @@ class Block(Entity):
         )
         self.block_type = block_type
 
+selected_block = "Emission"
+
+mini_block = Entity(
+  parent=camera,
+  model="assets/models/Torch",
+  texture=block_textures.get(selected_block),
+  scale=0.2,
+  position=(0.35, -0.25, 0.5),
+  rotation=(-15, -30, -5)
+  )
 # World settings
-world_size = 317  # This creates a world with over 100,000 blocks
+world_size = 317    # This creates a world with 100,489 blocks
 render_distance = 8 # reduce this value if you have a slow computer
                     # Render Distance of 8 will render 8x8 blocks around the player
                     # In order to prevent FPS drop and lag, keep the render distance low
@@ -44,7 +56,10 @@ for x in range(world_size):
 visible_blocks = {}
 
 # initialize the player controller
-player = FirstPersonController()
+player=FirstPersonController(
+  mouse_sensitivity=Vec2(100, 100),
+  position=(5, 5, 5)
+)
 
 # Create the sky background (MUST BE CHANGED TO NIGHT SOON)
 Sky()
@@ -63,7 +78,7 @@ def update_visible_blocks():
             destroy(visible_blocks[position])
             del visible_blocks[position]
 
-#This is an Ursina function that is called every frame
+# This is an Ursina function that is called every frame
 def update():
     #Every frame, update the visible blocks
     update_visible_blocks()
