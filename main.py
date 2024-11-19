@@ -40,10 +40,16 @@ mini_block = Entity(
   rotation=(-15, -30, -5)
   )
 # World settings
-world_size = 317    # This creates a world with 100,489 blocks
+world_size = 20    # This creates a world with 100,489 blocks
 render_distance = 8 # reduce this value if you have a slow computer
                     # Render Distance of 8 will render 8x8 blocks around the player
                     # In order to prevent FPS drop and lag, keep the render distance low
+
+# create boundaries
+leftWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(-1, 0, (world_size / 2) - 0.5), collider="box", visible=False)
+rightWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(world_size , 0, (world_size / 2) - 0.5), collider="box", visible=False)
+frontWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, world_size), collider="box", visible=False)
+backWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, -1), collider="box", visible=False)
 
 # Store all block positions in a set (all unique blocks with uniqe positions)
 block_positions = set()
@@ -60,7 +66,7 @@ player=FirstPersonController(
   position=(5, 5, 5)
 )
 
-# Create the sky background (MUST BE CHANGED TO NIGHT SOON)
+# Create the night sky background
 Sky(texture="minecraft_starter/assets/textures/nightSky.png")
 
 def update_visible_blocks():
