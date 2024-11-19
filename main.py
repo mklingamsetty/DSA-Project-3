@@ -61,7 +61,7 @@ player=FirstPersonController(
 )
 
 # Create the sky background (MUST BE CHANGED TO NIGHT SOON)
-Sky()
+Sky(texture="minecraft_starter/assets/textures/nightSky.png")
 
 def update_visible_blocks():
     player_x = int(player.x)
