@@ -75,7 +75,7 @@ tile_map = []
 
 # Set to store unique obstacle positions
 obstacle_positions = set()
-
+cluster_locations = []
 # Place 3x3 clusters of obstacles
 for i in range(num_clusters):
     placed = False
@@ -83,16 +83,17 @@ for i in range(num_clusters):
         # Declaring the cluster position to be inside of the world and not outside of it
         x = random.randint(0, world_size - 3) # x pos
         z = random.randint(0, world_size - 3) # z pos
+        obstacleType = random.randint(1, 3) # Randomly select the obstacle type
         
         # create a vector<pair<int, int>> equivalent to mark the cluster obstacle positions
         cluster_positions = [(x + dx, z + dz) for dx in range(3) for dz in range(3)]
+        # print(cluster_positions)
         # Creates a 3x3 cluster starting at the randomly generated x and z positions
         # Now using a nested for loop, we marks the clustered position 3 in the x from the start and 3 in the z from the start
         
         # cluster_positions in C++: vector<pair<int, int>> cluster_positions = {{x, z}, {x + 1, z}, {x + 2, z}, 
         #                                                                       {x, z + 1}, {x + 1, z + 1}, {x + 2, z + 1}, 
         #                                                                       {x, z + 2}, {x + 1, z + 2}, {x + 2, z + 2}};
-        
         # Now we need to check if any of the coordinates in cluster_positions are already occupied by an obstacle
         if all((cx, cz) not in obstacle_positions for (cx, cz) in cluster_positions):
             # if all the coordinates in cluster_positions are not in obstacle_positions
@@ -100,6 +101,7 @@ for i in range(num_clusters):
             
             # Then I should Add the cluster positions to the obstacle set
             obstacle_positions.update(cluster_positions)
+            cluster_locations.append((cluster_positions, obstacleType))
             placed = True
 
 # Place single tile obstacles
@@ -111,9 +113,6 @@ while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be s
     # If the position is not already taken by an obstacle, add it to the obstacle set
     if (x, z) not in obstacle_positions:
         obstacle_positions.add((x, z))
-
-
-
 
 # Initialize the tile map
 for x in range(world_size):
@@ -155,17 +154,17 @@ def update_visible_blocks():
                 if block_positions[position]: 
                     block_type = "grass"
                     visible_blocks[position] = Block(position=position, block_type=block_type)
+
                 if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
-                    block_type = obstacle_types[random.randint(0, 2)]
-                    if block_type == "stone":
-                        visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
-                        middle_obstacle_position = (x, -3, z)
-                        visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
-                        top_obstacle_position = (x, -2, z)
-                        visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
-                    else:
-                        visible_blocks[position] = Block(position=position, scale=(1, 1, 1), block_type=block_type)
-                    
+                    # Now I need to check if (x, z) is in cluster_locations
+                    for cluster_positions, obstacleType in cluster_locations:
+                        if (x, z) in cluster_positions:
+                            block_type = obstacle_types[obstacleType - 1]
+                            visible_blocks[position] = Block(position=position, block_type=block_type)
+                            break
+                
+                
+                #visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type=block_type)
                 # block_type = "grass" if block_positions[position] else "obstacleTile"
     # Remove blocks that are out of range
     for position in list(visible_blocks):
