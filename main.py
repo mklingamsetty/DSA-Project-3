@@ -15,7 +15,8 @@ block_textures = {
     "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
     "water": load_texture("minecraft_starter/assets/textures/water.png"),
     "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
-    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png")
+    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png"),
+    "wood" : load_texture("minecraft_starter/assets/textures/Wood.png")
     # Add other block textures if needed
 }
 
@@ -155,7 +156,11 @@ def update_visible_blocks():
                     visible_blocks[position] = Block(position=position, block_type=block_type)
                 if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
                     block_type = "stone"
-                    visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 2, 1), block_type=block_type)
+                    visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                    middle_obstacle_position = (x, -3, z)
+                    visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                    top_obstacle_position = (x, -2, z)
+                    visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
                 # block_type = "grass" if block_positions[position] else "obstacleTile"
     # Remove blocks that are out of range
     for position in list(visible_blocks):
