@@ -1,5 +1,6 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
+import random
 
 # Initialize the app
 app = Ursina()
@@ -13,7 +14,8 @@ block_textures = {
     "bedrock": load_texture("minecraft_starter/assets/textures/stone07.png"),
     "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
     "water": load_texture("minecraft_starter/assets/textures/water.png"),
-    "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png")
+    "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
+    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png")
     # Add other block textures if needed
 }
 
@@ -39,11 +41,14 @@ mini_block = Entity(
   position=(0.35, -0.25, 0.5),
   rotation=(-15, -30, -5)
   )
+
 # World settings
-world_size = 317    # This creates a world with 100,489 blocks
-render_distance = 8 # reduce this value if you have a slow computer
-                    # Render Distance of 8 will render 8x8 blocks around the player
-                    # In order to prevent FPS drop and lag, keep the render distance low
+world_size = 317                                            # This creates a world with 100,489 blocks
+render_distance = 8                                         # reduce this value if you have a slow computer
+total_tiles = world_size * world_size                       # Compute total number of tiles
+total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
+num_clusters = total_obstacles // 10                        # Number of Obstacle clusters (occupies 9 tiles)
+num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle singles (occupies 1 tiles)
 
 # create boundaries
 leftWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(-1, 0, (world_size / 2) - 0.5), collider="box", visible=False)
@@ -52,10 +57,59 @@ frontWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position
 backWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, -1), collider="box", visible=False)
 
 # Store all block positions in a set (all unique blocks with uniqe positions)
-block_positions = set()
+block_positions = {}
+
+# Will contain 2D map of obstacle positions and free spaces
+tile_map = []
+
+# Set to store unique obstacle positions
+obstacle_positions = set()
+
+# Place 3x3 clusters of obstacles
+for i in range(num_clusters):
+    placed = False
+    while not placed:
+        # Declaring the cluster position to be inside of the world and not outside of it
+        x = random.randint(0, world_size - 3) # x pos
+        z = random.randint(0, world_size - 3) # z pos
+        
+        # create a vector<pair<int, int>> equivalent to mark the cluster obstacle positions
+        cluster_positions = [(x + dx, z + dz) for dx in range(3) for dz in range(3)]
+        # Creates a 3x3 cluster starting at the randomly generated x and z positions
+        # Now using a nested for loop, it marks the clustered position 3 in the x from the start and 3 in the z from the start
+        
+        # cluster_positions in C++: vector<pair<int, int>> cluster_positions = {{x, z}, {x + 1, z}, {x + 2, z}, 
+        #                                                                       {x, z + 1}, {x + 1, z + 1}, {x + 2, z + 1}, 
+        #                                                                       {x, z + 2}, {x + 1, z + 2}, {x + 2, z + 2}};
+        
+        # Now we need to check if any of the coordinates in cluster_positions are already occupied by an obstacle
+        if all((cx, cz) not in obstacle_positions for (cx, cz) in cluster_positions):
+            # Line above translates to: if all the coordinates in cluster_positions are not in obstacle_positions
+            # meaning that the obstacle cluster CAN be placed
+            
+            # Then I should Add the cluster positions to the obstacle set
+            obstacle_positions.update(cluster_positions)
+            placed = True
+
+# Place single tile obstacles
+while len(obstacle_positions) < total_obstacles: #Remaining obstacles will be single tiled
+    # Declare world bounds for the obstacles
+    x = random.randint(0, world_size - 1)
+    z = random.randint(0, world_size - 1)
+    
+    # If the position is not already taken by an obstacle, add it to the obstacle set
+    if (x, z) not in obstacle_positions:
+        obstacle_positions.add((x, z))
+
+# Initialize the tile map
 for x in range(world_size):
+    row = [] #declare a row to store the tile status (Free Space or Obstacle) (True or False)
     for z in range(world_size):
-        block_positions.add((x, -5, z))
+        position = (x, -5, z)
+        is_free_space = (x, z) not in obstacle_positions
+        block_positions[position] = is_free_space
+        row.append(is_free_space)
+    tile_map.append(row)
 
 # Dictionary to keep track of visible blocks due to render distance
 visible_blocks = {}
@@ -76,7 +130,9 @@ def update_visible_blocks():
         for z in range(player_z - render_distance, player_z + render_distance):
             position = (x, -5, z)
             if position in block_positions and position not in visible_blocks:
-                visible_blocks[position] = Block(position=position, block_type="grass")
+                # Use the appropriate texture based on whether it's an obstacle
+                block_type = "grass" if block_positions[position] else "obstacleTile"
+                visible_blocks[position] = Block(position=position, block_type=block_type)
     # Remove blocks that are out of range
     for position in list(visible_blocks):
         if abs(position[0] - player_x) > render_distance or abs(position[2] - player_z) > render_distance:
