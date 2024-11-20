@@ -142,6 +142,7 @@ player=FirstPersonController(
 # Create the night sky background
 Sky(texture="minecraft_starter/assets/textures/nightSky.png")
 
+obstacle_types = ["stone", "lava", "water"]
 def update_visible_blocks():
     player_x = int(player.x)
     player_z = int(player.z)
@@ -155,12 +156,16 @@ def update_visible_blocks():
                     block_type = "grass"
                     visible_blocks[position] = Block(position=position, block_type=block_type)
                 if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
-                    block_type = "stone"
-                    visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
-                    middle_obstacle_position = (x, -3, z)
-                    visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
-                    top_obstacle_position = (x, -2, z)
-                    visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                    block_type = obstacle_types[random.randint(0, 2)]
+                    if block_type == "stone":
+                        visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                        middle_obstacle_position = (x, -3, z)
+                        visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                        top_obstacle_position = (x, -2, z)
+                        visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                    else:
+                        visible_blocks[position] = Block(position=position, scale=(1, 1, 1), block_type=block_type)
+                    
                 # block_type = "grass" if block_positions[position] else "obstacleTile"
     # Remove blocks that are out of range
     for position in list(visible_blocks):
