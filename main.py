@@ -15,18 +15,17 @@ block_textures = {
     "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
     "water": load_texture("minecraft_starter/assets/textures/water.png"),
     "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
-    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png"),
-    "wood" : load_texture("minecraft_starter/assets/textures/Wood.png")
+    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png")
     # Add other block textures if needed
 }
 
 # Block class
 class Block(Entity):
-    def __init__(self, position=(0,0,0), block_type="grass"):
+    def __init__(self, position=(0,0,0), scale=(1, 1, 1), block_type="grass"):
         super().__init__(
             position=position,
             model="minecraft_starter/assets/models/block_model",
-            scale = 1,
+            scale = scale,
             origin_y = 0.5,
             texture=block_textures.get(block_type),
             collider='box'
@@ -45,19 +44,19 @@ mini_block = Entity(
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
-world_size = 1000                                           # This creates a world_size x world_size grid (Minimum number needs to be 317 for at least 100,000 Datapoints)
+world_size = 1000                                            # This creates a world with 100,489 blocks
 render_distance = 8                                         # reduce this value if you have a slow computer
 total_tiles = world_size * world_size                       # Compute total number of tiles
 total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
-num_clusters = total_obstacles // 10                        # Number of Obstacle "clusters" (occupies 9 tiles)
-num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle "singles" (occupies 1 tiles)
+num_clusters = total_obstacles // 10                        # Number of Obstacle clusters (occupies 9 tiles)
+num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle singles (occupies 1 tiles)
 player_spawn_x = world_size // 2                            # Player spawn x position
 player_spawn_z = world_size - 10                            # Player spawn z position
-player_speed = 15                                           # Player movement speed
-home_min_x = world_size - 100                               # Home min x position
-home_max_x = world_size - 10                                # Home max x position
-home_min_z = world_size - 10                                # Home min z position
-home_max_z = world_size - 100                               # Home max z position
+player_speed = 10                                           # Player movement speed
+home_min_x = 217                                            # Home min x position
+home_max_x = 317                                            # Home max x position
+home_min_z = 217                                            # Home min z position
+home_max_z = 317                                            # Home max z position
 ###############################################################################################################################
 ###############################################################################################################################
 
@@ -67,7 +66,7 @@ rightWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position
 frontWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, world_size), collider="box", visible=False)
 backWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, -1), collider="box", visible=False)
 
-# Store all block positions in a dictionary (all unique blocks with uniqe positions)
+# Store all block positions in a set (all unique blocks with uniqe positions)
 block_positions = {}
 
 # Will contain 2D map of obstacle positions and free spaces
@@ -75,12 +74,6 @@ tile_map = []
 
 # Set to store unique obstacle positions
 obstacle_positions = set()
-
-# Set to store obstacle clusters
-obstacle_cluster_positions = set()
-
-# Set to store obstacle singles
-obstacle_single_positions = set()
 
 # Place 3x3 clusters of obstacles
 for i in range(num_clusters):
@@ -106,9 +99,6 @@ for i in range(num_clusters):
             
             # Then I should Add the cluster positions to the obstacle set
             obstacle_positions.update(cluster_positions)
-
-            # Add the cluster positions to the obstacle cluster set
-            obstacle_cluster_positions.update(cluster_positions)
             placed = True
 
 # Place single tile obstacles
@@ -120,7 +110,9 @@ while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be s
     # If the position is not already taken by an obstacle, add it to the obstacle set
     if (x, z) not in obstacle_positions:
         obstacle_positions.add((x, z))
-        obstacle_single_positions.add((x, z))
+
+
+
 
 # Initialize the tile map
 for x in range(world_size):
@@ -155,10 +147,16 @@ def update_visible_blocks():
     for x in range(player_x - render_distance, player_x + render_distance):
         for z in range(player_z - render_distance, player_z + render_distance):
             position = (x, -5, z)
+            obstacle_position = (x, -4, z)
             if position in block_positions and position not in visible_blocks:
                 # Use the appropriate texture based on whether it's an obstacle
-                block_type = "grass" if block_positions[position] else "obstacleTile"
-                visible_blocks[position] = Block(position=position, block_type=block_type)
+                if block_positions[position]: 
+                    block_type = "grass"
+                    visible_blocks[position] = Block(position=position, block_type=block_type)
+                if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
+                    block_type = "stone"
+                    visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 2, 1), block_type=block_type)
+                # block_type = "grass" if block_positions[position] else "obstacleTile"
     # Remove blocks that are out of range
     for position in list(visible_blocks):
         if abs(position[0] - player_x) > render_distance or abs(position[2] - player_z) > render_distance:
