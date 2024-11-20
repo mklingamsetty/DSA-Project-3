@@ -15,7 +15,8 @@ block_textures = {
     "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
     "water": load_texture("minecraft_starter/assets/textures/water.png"),
     "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
-    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png")
+    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png"),
+    "wood" : load_texture("minecraft_starter/assets/textures/Wood.png")
     # Add other block textures if needed
 }
 
@@ -44,19 +45,19 @@ mini_block = Entity(
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
-world_size = 317                                            # This creates a world with 100,489 blocks
+world_size = 1000                                           # This creates a world_size x world_size grid (Minimum number needs to be 317 for at least 100,000 Datapoints)
 render_distance = 8                                         # reduce this value if you have a slow computer
 total_tiles = world_size * world_size                       # Compute total number of tiles
 total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
-num_clusters = total_obstacles // 10                        # Number of Obstacle clusters (occupies 9 tiles)
-num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle singles (occupies 1 tiles)
+num_clusters = total_obstacles // 10                        # Number of Obstacle "clusters" (occupies 9 tiles)
+num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle "singles" (occupies 1 tiles)
 player_spawn_x = world_size // 2                            # Player spawn x position
 player_spawn_z = world_size - 10                            # Player spawn z position
-player_speed = 10                                           # Player movement speed
-home_min_x = 217                                            # Home min x position
-home_max_x = 317                                            # Home max x position
-home_min_z = 217                                            # Home min z position
-home_max_z = 317                                            # Home max z position
+player_speed = 15                                           # Player movement speed
+home_min_x = world_size - 100                               # Home min x position
+home_max_x = world_size - 10                                # Home max x position
+home_min_z = world_size - 10                                # Home min z position
+home_max_z = world_size - 100                               # Home max z position
 ###############################################################################################################################
 ###############################################################################################################################
 
@@ -66,7 +67,7 @@ rightWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position
 frontWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, world_size), collider="box", visible=False)
 backWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, -1), collider="box", visible=False)
 
-# Store all block positions in a set (all unique blocks with uniqe positions)
+# Store all block positions in a dictionary (all unique blocks with uniqe positions)
 block_positions = {}
 
 # Will contain 2D map of obstacle positions and free spaces
@@ -74,6 +75,12 @@ tile_map = []
 
 # Set to store unique obstacle positions
 obstacle_positions = set()
+
+# Set to store obstacle clusters
+obstacle_cluster_positions = set()
+
+# Set to store obstacle singles
+obstacle_single_positions = set()
 
 # Place 3x3 clusters of obstacles
 for i in range(num_clusters):
@@ -99,6 +106,9 @@ for i in range(num_clusters):
             
             # Then I should Add the cluster positions to the obstacle set
             obstacle_positions.update(cluster_positions)
+
+            # Add the cluster positions to the obstacle cluster set
+            obstacle_cluster_positions.update(cluster_positions)
             placed = True
 
 # Place single tile obstacles
@@ -110,6 +120,7 @@ while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be s
     # If the position is not already taken by an obstacle, add it to the obstacle set
     if (x, z) not in obstacle_positions:
         obstacle_positions.add((x, z))
+        obstacle_single_positions.add((x, z))
 
 # Initialize the tile map
 for x in range(world_size):
