@@ -40,8 +40,9 @@ mini_block = Entity(
   scale= 0.2,
   position=(0.35, -0.25, 0.5),
   rotation=(-15, -30, -5)
-  )
-
+)
+########################################################### GLOBAL VARIABLES ##################################################
+###############################################################################################################################
 # World settings
 world_size = 317                                            # This creates a world with 100,489 blocks
 render_distance = 8                                         # reduce this value if you have a slow computer
@@ -49,6 +50,15 @@ total_tiles = world_size * world_size                       # Compute total numb
 total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
 num_clusters = total_obstacles // 10                        # Number of Obstacle clusters (occupies 9 tiles)
 num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle singles (occupies 1 tiles)
+player_spawn_x = world_size // 2                            # Player spawn x position
+player_spawn_z = world_size - 10                            # Player spawn z position
+player_speed = 10                                           # Player movement speed
+home_min_x = 217                                            # Home min x position
+home_max_x = 317                                            # Home max x position
+home_min_z = 217                                            # Home min z position
+home_max_z = 317                                            # Home max z position
+###############################################################################################################################
+###############################################################################################################################
 
 # create boundaries
 leftWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(-1, 0, (world_size / 2) - 0.5), collider="box", visible=False)
@@ -76,7 +86,7 @@ for i in range(num_clusters):
         # create a vector<pair<int, int>> equivalent to mark the cluster obstacle positions
         cluster_positions = [(x + dx, z + dz) for dx in range(3) for dz in range(3)]
         # Creates a 3x3 cluster starting at the randomly generated x and z positions
-        # Now using a nested for loop, it marks the clustered position 3 in the x from the start and 3 in the z from the start
+        # Now using a nested for loop, we marks the clustered position 3 in the x from the start and 3 in the z from the start
         
         # cluster_positions in C++: vector<pair<int, int>> cluster_positions = {{x, z}, {x + 1, z}, {x + 2, z}, 
         #                                                                       {x, z + 1}, {x + 1, z + 1}, {x + 2, z + 1}, 
@@ -114,10 +124,15 @@ for x in range(world_size):
 # Dictionary to keep track of visible blocks due to render distance
 visible_blocks = {}
 
+# Ensure the player doesn't spawn on an obstacle
+while (player_spawn_x, player_spawn_z) in obstacle_positions:
+    player_spawn_x += 1  # Adjust as necessary
+
 # initialize the player controller
 player=FirstPersonController(
-  mouse_sensitivity=Vec2(100, 100),
-  position=(5, 5, 5)
+  mouse_sensitivity=Vec2(100, 100), # Mouse sensitivity
+  position=(player_spawn_x, 5, player_spawn_z), # Player spawn position
+  speed=player_speed # Player movement speed
 )
 
 # Create the night sky background
