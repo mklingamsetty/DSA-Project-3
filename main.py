@@ -84,15 +84,15 @@ for i in range(num_clusters):
         
         # Now we need to check if any of the coordinates in cluster_positions are already occupied by an obstacle
         if all((cx, cz) not in obstacle_positions for (cx, cz) in cluster_positions):
-            # Line above translates to: if all the coordinates in cluster_positions are not in obstacle_positions
-            # meaning that the obstacle cluster CAN be placed
+            # if all the coordinates in cluster_positions are not in obstacle_positions
+            # meaning now the obstacle cluster CAN be placed
             
             # Then I should Add the cluster positions to the obstacle set
             obstacle_positions.update(cluster_positions)
             placed = True
 
 # Place single tile obstacles
-while len(obstacle_positions) < total_obstacles: #Remaining obstacles will be single tiled
+while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be single tiled
     # Declare world bounds for the obstacles
     x = random.randint(0, world_size - 1)
     z = random.randint(0, world_size - 1)
