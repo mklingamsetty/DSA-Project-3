@@ -23,5 +23,35 @@ Credits/References:
    - https://sketchfab.com/3d-models/minecraft-torch-e88c4214d4bc4437ae6d249237591071
    - https://www.youtube.com/watch?v=IWhA6lV_sxg&ab_channel=Codeandcraft
    - https://sketchfab.com/3d-models/minecraft-wood-block-d498c39e40974966836fc1140c263d22
-   
-   
+
+
+********** DELETE EACH TASK WHEN FINISHED **********
+    TASKS !!!!
+
+    - Get Zombies to spawn on mob_position
+        - (OPTIONAL) Get other mob models and textures and randomize
+    - Home Creation
+        - Set bounds of where house can spawn
+        - Build design of the house with given block textures
+            - (OPTIONAL) get a door model and texture
+            - (OPTIONAL) get a window model and texture
+    - Construct our Algorithms
+        - BFS implementation
+        - DFS implementation
+    - Player UI
+        - Map
+            - When the 'k' key is pressed, a new miniature window, "MAP" should now appear
+            - User should be able to select with algorithm to use (BFS or DFS)
+            - Map should contain positions of the following:
+                - Player position
+                - obstacle positions
+                - home position
+            - We must show how the algorithms work, be shading in the pixels in the Map
+                - similar to how the GTA project worked
+            - (OPTIONAL) after best route is found, shade the actual blocks on the actual world to help
+    - OPTIONAL (WORK ON THIS LAST)
+        - music (default minecraft music)
+        - block effects
+            - water -> player speed + 5
+            - lava -> player speed - 5
+        

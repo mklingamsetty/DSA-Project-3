@@ -44,16 +44,13 @@ class Block(Entity):
 
 # Block class
 class Mobs(Entity):
-    def __init__(self, position=(0,0,0), scale=(0.1), block_type="zombie"):
+    def __init__(self, position=(0,0,0), mob_type="zombie"):
         super().__init__(
             position=position,
-            model=mob_models.get(block_type),
-            scale = scale,
-            origin_y = 0.5,
-            texture=mob_textures.get(block_type),
-            collider='box'
+            model=mob_models.get(mob_type),
+            scale = 1,
+            texture=mob_textures.get(mob_type),
         )
-        self.block_type = block_type
 
 
 mini_block = Entity(
@@ -152,6 +149,7 @@ for x in range(world_size):
 
 # Dictionary to keep track of visible blocks due to render distance
 visible_blocks = {}
+visible_mobs = {}
 
 # Ensure the player doesn't spawn on an obstacle
 while (player_spawn_x, player_spawn_z) in obstacle_positions:
@@ -215,22 +213,26 @@ def update_visible_blocks():
                                             if leaf_position not in visible_blocks: visible_blocks[leaf_position] = Block(position=leaf_position, block_type="leaves")
 
                             elif block_type == "bedrock":
-                                visible_blocks[obstacle_position] = Mobs(position=obstacle_position, scale=(0.1), block_type="zombie")
-                            
+                                # Now we need to spawn a zombie on the bedrock
+                                mob_position = (x, -4, z)
+                                if mob_position not in visible_mobs:
+                                    print("Spawning Zombie at: ", mob_position)
+                                    visible_mobs[mob_position] = Mobs(position=mob_position, mob_type="zombie")
                             visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
-                        
-                           
-                        
-                
-                
-                #visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type=block_type)
-                # block_type = "grass" if block_positions[position] else "obstacleTile"
+
+    
     # Remove blocks that are out of range
     for position in list(visible_blocks):
         if abs(position[0] - player_x) > render_distance or abs(position[2] - player_z) > render_distance:
             destroy(visible_blocks[position])
             del visible_blocks[position]
+
+    # Remove mobs that are out of range
+    for position in list(visible_mobs):
+        if abs(position[0] - player_x) > render_distance or abs(position[2] - player_z) > render_distance:
+            destroy(visible_mobs[position])
+            del visible_mobs[position]
 
 # This is an Ursina function that is called every frame
 def update():
