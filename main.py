@@ -21,6 +21,14 @@ block_textures = {
     # Add other block textures if needed
 }
 
+mob_textures = {
+    "zombie" : load_texture("minecraft_starter/assets/textures/zombie.png")
+}
+
+mob_models = {
+    "zombie" : "minecraft_starter/assets/models/Zombie_Model"
+}
+
 # Block class
 class Block(Entity):
     def __init__(self, position=(0,0,0), scale=(1, 1, 1), block_type="grass"):
@@ -30,6 +38,19 @@ class Block(Entity):
             scale = scale,
             origin_y = 0.5,
             texture=block_textures.get(block_type),
+            collider='box'
+        )
+        self.block_type = block_type
+
+# Block class
+class Mobs(Entity):
+    def __init__(self, position=(0,0,0), scale=(0.1), block_type="zombie"):
+        super().__init__(
+            position=position,
+            model=mob_models.get(block_type),
+            scale = scale,
+            origin_y = 0.5,
+            texture=mob_textures.get(block_type),
             collider='box'
         )
         self.block_type = block_type
@@ -193,8 +214,14 @@ def update_visible_blocks():
                                             leaf_position = (x + dx, -1, z + dz)
                                             if leaf_position not in visible_blocks: visible_blocks[leaf_position] = Block(position=leaf_position, block_type="leaves")
 
+                            elif block_type == "bedrock":
+                                visible_blocks[obstacle_position] = Mobs(position=obstacle_position, scale=(0.1), block_type="zombie")
+                            
                             visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
+                        
+                           
+                        
                 
                 
                 #visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type=block_type)
