@@ -16,7 +16,8 @@ block_textures = {
     "water": load_texture("minecraft_starter/assets/textures/water.png"),
     "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
     "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png"),
-    "wood" : load_texture("minecraft_starter/assets/textures/Wood.png")
+    "wood" : load_texture("minecraft_starter/assets/textures/Wood.png"),
+    "leaves" : load_texture("minecraft_starter/assets/textures/leaf.png")
     # Add other block textures if needed
 }
 
@@ -45,8 +46,8 @@ mini_block = Entity(
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
-world_size = 1000                                            # This creates a world with 100,489 blocks
-render_distance = 8                                         # reduce this value if you have a slow computer
+world_size = 500                                            # This creates a world with 100,489 blocks
+render_distance = 7                                         # reduce this value if you have a slow computer
 total_tiles = world_size * world_size                       # Compute total number of tiles
 total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
 num_clusters = total_obstacles // 10                        # Number of Obstacle clusters (occupies 9 tiles)
@@ -76,6 +77,8 @@ tile_map = []
 # Set to store unique obstacle positions
 obstacle_positions = set()
 cluster_locations = []
+single_locations = []
+
 # Place 3x3 clusters of obstacles
 for i in range(num_clusters):
     placed = False
@@ -109,10 +112,12 @@ while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be s
     # Declare world bounds for the obstacles
     x = random.randint(0, world_size - 1)
     z = random.randint(0, world_size - 1)
+    obstacleType = random.randint(1, 2) # Randomly select the obstacle type
     
     # If the position is not already taken by an obstacle, add it to the obstacle set
     if (x, z) not in obstacle_positions:
         obstacle_positions.add((x, z))
+        single_locations.append(((x, z), obstacleType))
 
 # Initialize the tile map
 for x in range(world_size):
@@ -141,7 +146,8 @@ player=FirstPersonController(
 # Create the night sky background
 Sky(texture="minecraft_starter/assets/textures/nightSky.png")
 
-obstacle_types = ["stone", "lava", "water"]
+obstacle_cluster_types = ["stone", "lava", "water"]
+obstacle_single_types = ["wood", "bedrock"]
 def update_visible_blocks():
     player_x = int(player.x)
     player_z = int(player.z)
@@ -159,7 +165,34 @@ def update_visible_blocks():
                     # Now I need to check if (x, z) is in cluster_locations
                     for cluster_positions, obstacleType in cluster_locations:
                         if (x, z) in cluster_positions:
-                            block_type = obstacle_types[obstacleType - 1]
+                            block_type = obstacle_cluster_types[obstacleType - 1]
+                            if block_type == "stone":
+                                visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                                middle_obstacle_position = (x, -3, z)
+                                visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                                top_obstacle_position = (x, -2, z)
+                                visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                            visible_blocks[position] = Block(position=position, block_type=block_type)
+                            break
+
+                    for single_position, obstacleType in single_locations:
+                        if (x, z) == single_position:
+                            block_type = obstacle_single_types[obstacleType - 1]
+                            if block_type == "wood":
+                                visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                                bottom_obstacle_position = (x, -3, z)
+                                visible_blocks[bottom_obstacle_position] = Block(position=bottom_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                                middle_obstacle_position = (x, -2, z)
+                                visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                                top_obstacle_position = (x, -1, z)
+                                visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                                # Generate Tree's Leaves now
+                                for dx in range(-2, 3):
+                                    for dz in range(-2, 3):
+                                        if (dx, dz) != (0, 0):
+                                            leaf_position = (x + dx, -1, z + dz)
+                                            if leaf_position not in visible_blocks: visible_blocks[leaf_position] = Block(position=leaf_position, block_type="leaves")
+
                             visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
                 
