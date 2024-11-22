@@ -17,7 +17,8 @@ block_textures = {
     "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
     "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png"),
     "wood" : load_texture("minecraft_starter/assets/textures/Wood.png"),
-    "leaves" : load_texture("minecraft_starter/assets/textures/leaf.png")
+    "leaves" : load_texture("minecraft_starter/assets/textures/leaf.png"),
+    "wall" : load_texture("minecraft_starter/assets/textures/wallStone.png")
     # Add other block textures if needed
 }
 
@@ -31,16 +32,25 @@ mob_models = {
 
 # Block class
 class Block(Entity):
-    def __init__(self, position=(0,0,0), scale=(1, 1, 1), block_type="grass"):
+    def __init__(self, position=(0, 0, 0), scale=(1, 1, 1), block_type="grass", **kwargs):
+        if block_type == "zombie":
+            model = mob_models.get("zombie")
+            texture = mob_textures.get("zombie")
+        else:
+            model = "minecraft_starter/assets/models/block_model"
+            texture = block_textures.get(block_type)
+
         super().__init__(
             position=position,
-            model="minecraft_starter/assets/models/block_model",
-            scale = scale,
-            origin_y = 0.5,
-            texture=block_textures.get(block_type),
-            collider='box'
+            scale=scale,
+            origin_y=0.5,
+            model=model,
+            texture=texture,
+            collider='box',
+            **kwargs  # Allow additional parameters to be passed
         )
         self.block_type = block_type
+
 
 mini_block = Entity(
   parent=camera,
@@ -53,19 +63,18 @@ mini_block = Entity(
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
-world_size = 500                                            # This creates a world with 100,489 blocks
-render_distance = 7                                         # reduce this value if you have a slow computer
+world_size = 1000                                           # This creates a world with 100,489 blocks
+render_distance = 13                                         # reduce this value if you have a slow computer
 total_tiles = world_size * world_size                       # Compute total number of tiles
 total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
 num_clusters = total_obstacles // 10                        # Number of Obstacle clusters (occupies 9 tiles)
 num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle singles (occupies 1 tiles)
 player_spawn_x = world_size // 2                            # Player spawn x position
 player_spawn_z = world_size - 10                            # Player spawn z position
-player_speed = 10                                           # Player movement speed
-home_min_x = 217                                            # Home min x position
-home_max_x = 317                                            # Home max x position
-home_min_z = 217                                            # Home min z position
-home_max_z = 317                                            # Home max z position
+player_speed = 25                                           # Player movement speed
+home_size = 30                                              # Home size x Home size
+home_min_z = world_size - (5*home_size)                     # Home min z position
+home_max_z = world_size - home_size - 10                    # Home max z position
 ###############################################################################################################################
 ###############################################################################################################################
 
@@ -80,6 +89,15 @@ block_positions = {}
 
 # Will contain 2D map of obstacle positions and free spaces
 tile_map = []
+
+# Generate the Home
+home_tile_positions = []
+x = random.randint(0, world_size - home_size - 10)
+z = random.randint(home_min_z,home_max_z)
+for dx in range(home_size):
+    for dz in range(home_size):
+        home_tile_positions.append((x + dx, z + dz))
+            
 
 # Set to store unique obstacle positions
 obstacle_positions = set()
@@ -105,7 +123,7 @@ for i in range(num_clusters):
         #                                                                       {x, z + 1}, {x + 1, z + 1}, {x + 2, z + 1}, 
         #                                                                       {x, z + 2}, {x + 1, z + 2}, {x + 2, z + 2}};
         # Now we need to check if any of the coordinates in cluster_positions are already occupied by an obstacle
-        if all((cx, cz) not in obstacle_positions for (cx, cz) in cluster_positions):
+        if all((cx, cz) not in obstacle_positions and home_tile_positions for (cx, cz) in cluster_positions):
             # if all the coordinates in cluster_positions are not in obstacle_positions
             # meaning now the obstacle cluster CAN be placed
             
@@ -122,7 +140,7 @@ while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be s
     obstacleType = random.randint(1, 2) # Randomly select the obstacle type
     
     # If the position is not already taken by an obstacle, add it to the obstacle set
-    if (x, z) not in obstacle_positions:
+    if (x, z) not in obstacle_positions and (x, z) not in home_tile_positions:
         obstacle_positions.add((x, z))
         single_locations.append(((x, z), obstacleType))
 
@@ -170,6 +188,15 @@ def update_visible_blocks():
                     visible_blocks[position] = Block(position=position, block_type=block_type)
                     #visible_blocks[obstacle_position] = Zombie(position=obstacle_position, scale = 0.1)
                     #zombie = Entity(model=mob_models.get("zombie"), texture = mob_textures.get("zombie"), scale=0.07, double_sided=True, y = -4, x = x, z = z)
+                
+                if (x, z) in home_tile_positions:
+                    block_type = "wall"
+                    visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                    middle_obstacle_position = (x, -3, z)
+                    visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                    top_obstacle_position = (x, -2, z)
+                    visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                    visible_blocks[position] = Block(position=position, block_type=block_type)
                     
                 if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
                     # Now I need to check if (x, z) is in cluster_locations
@@ -201,19 +228,18 @@ def update_visible_blocks():
                                     for dz in range(-2, 3):
                                         if (dx, dz) != (0, 0):
                                             leaf_position = (x + dx, -1, z + dz)
-                                            if leaf_position not in visible_blocks: visible_blocks[leaf_position] = Block(position=leaf_position, block_type="leaves")
+                                            if leaf_position not in visible_blocks: visible_blocks[leaf_position] = Block(position=leaf_position, block_type="leaves", double_sided=True)
 
                             elif block_type == "bedrock":
+                                #visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type="zombie", double_sided=True, scale=0.08)
                                 # Now we need to spawn a zombie on the bedrock
                                 mob_position = (x, -4, z)
                                 print("Spawning Zombie at: ", mob_position)
-                                zombie = Block(position=mob_position, scale=0.08, block_type="grass")
-                                zombie.model = mob_models.get("zombie")
-                                zombie.texture = mob_textures.get("zombie")
-                                zombie.double_sided = True
-                                visible_blocks[mob_position] = zombie
-                                    
-                            visible_blocks[position] = Block(position=position, block_type=block_type)
+                                if mob_position not in visible_mobs and mob_position not in visible_blocks:
+                                    visible_mobs[mob_position] = Block(position=mob_position, scale=0.08, block_type="zombie", double_sided=True)
+                                    visible_blocks[mob_position] = Block(position=mob_position, block_type="zombie", double_sided=True, scale=0.08)
+                            if position not in visible_blocks:        
+                                visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
 
     

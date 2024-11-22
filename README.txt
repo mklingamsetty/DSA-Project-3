@@ -27,9 +27,6 @@ Credits/References:
 
 ********** DELETE EACH TASK WHEN FINISHED **********
     TASKS !!!!
-
-    - Get Zombies to spawn on mob_position
-        - (OPTIONAL) Get other mob models and textures and randomize
     - Home Creation
         - Set bounds of where house can spawn
         - Build design of the house with given block textures
