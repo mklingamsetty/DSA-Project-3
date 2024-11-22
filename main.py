@@ -26,7 +26,7 @@ mob_textures = {
 }
 
 mob_models = {
-    "zombie" : "minecraft_starter/assets/models/Zombie_Model"
+    "zombie" : load_model("minecraft_starter/assets/models/AnyConv.com__zombie.obj")
 }
 
 # Block class
@@ -41,17 +41,6 @@ class Block(Entity):
             collider='box'
         )
         self.block_type = block_type
-
-# Block class
-class Mobs(Entity):
-    def __init__(self, position=(0,0,0), mob_type="zombie"):
-        super().__init__(
-            position=position,
-            model=mob_models.get(mob_type),
-            scale = 1,
-            texture=mob_textures.get(mob_type),
-        )
-
 
 mini_block = Entity(
   parent=camera,
@@ -179,7 +168,9 @@ def update_visible_blocks():
                 if block_positions[position]: 
                     block_type = "grass"
                     visible_blocks[position] = Block(position=position, block_type=block_type)
-
+                    #visible_blocks[obstacle_position] = Zombie(position=obstacle_position, scale = 0.1)
+                    #zombie = Entity(model=mob_models.get("zombie"), texture = mob_textures.get("zombie"), scale=0.07, double_sided=True, y = -4, x = x, z = z)
+                    
                 if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
                     # Now I need to check if (x, z) is in cluster_locations
                     for cluster_positions, obstacleType in cluster_locations:
@@ -215,9 +206,13 @@ def update_visible_blocks():
                             elif block_type == "bedrock":
                                 # Now we need to spawn a zombie on the bedrock
                                 mob_position = (x, -4, z)
-                                if mob_position not in visible_mobs:
-                                    print("Spawning Zombie at: ", mob_position)
-                                    visible_mobs[mob_position] = Mobs(position=mob_position, mob_type="zombie")
+                                print("Spawning Zombie at: ", mob_position)
+                                zombie = Block(position=mob_position, scale=0.08, block_type="grass")
+                                zombie.model = mob_models.get("zombie")
+                                zombie.texture = mob_textures.get("zombie")
+                                zombie.double_sided = True
+                                visible_blocks[mob_position] = zombie
+                                    
                             visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
 
@@ -237,6 +232,8 @@ def update_visible_blocks():
 # This is an Ursina function that is called every frame
 def update():
     #Every frame, update the visible blocks
+    if player.y < -10:
+        player.y = 10
     update_visible_blocks()
 
 # Run the app in main function
