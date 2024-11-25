@@ -27,11 +27,8 @@ Credits/References:
 
 ********** DELETE EACH TASK WHEN FINISHED **********
     TASKS !!!!
-    - Home Creation
-        - Set bounds of where house can spawn
-        - Build design of the house with given block textures
-            - (OPTIONAL) get a door model and texture
-            - (OPTIONAL) get a window model and texture
+    - Changes need to be made
+        - Look into Tile map, need to redo it and add player and house position
     - Construct our Algorithms
         - BFS implementation
         - DFS implementation

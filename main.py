@@ -1,21 +1,15 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 import random
-from worldSettings import *
 
 # Initialize the app
 app = Ursina()
 window.exit_button.visible = True # Show the Red X window close button
 
-# Loading textures must occur after app in initialized
+# Loading textures and worldGen must occur after app in initialized
 from textures import *
 from worldGenerationFunctions import *
-
-# create boundaries
-leftWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(-1, 0, (world_size / 2) - 0.5), collider="box", visible=False)
-rightWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(world_size , 0, (world_size / 2) - 0.5), collider="box", visible=False)
-frontWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, world_size), collider="box", visible=False)
-backWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, -1), collider="box", visible=False)
+from worldSettings import *
 
 # Store all block positions in a set (all unique blocks with uniqe positions)
 block_positions = {}
@@ -121,7 +115,7 @@ def update_visible_blocks():
                                 visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type="zombie", double_sided=True, scale=0.08)
                                 # Now we need to spawn a zombie on the bedrock
                                 mob_position = (x, -4, z)
-                                print("Spawning Zombie at: ", mob_position)
+                                # print("Spawning Zombie at: ", mob_position)
                                 if mob_position not in visible_mobs and mob_position not in visible_blocks:
                                     visible_blocks[position] = Block(position=mob_position, scale=0.07, block_type="zombie", double_sided=True)
                                     #visible_blocks[mob_position] = Block(position=mob_position, block_type="zombie", double_sided=True, scale=0.08)
