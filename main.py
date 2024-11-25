@@ -1,82 +1,15 @@
 from ursina import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 import random
+from worldSettings import *
 
 # Initialize the app
 app = Ursina()
 window.exit_button.visible = True # Show the Red X window close button
 
-# Load block textures
-block_textures = {
-    "grass": load_texture("minecraft_starter/assets/textures/groundEarth.png"),
-    "dirt": load_texture("minecraft_starter/assets/textures/groundMud.png"),
-    "stone": load_texture("minecraft_starter/assets/textures/Stone01.png"),
-    "bedrock": load_texture("minecraft_starter/assets/textures/stone07.png"),
-    "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
-    "water": load_texture("minecraft_starter/assets/textures/water.png"),
-    "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
-    "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png"),
-    "wood" : load_texture("minecraft_starter/assets/textures/Wood.png"),
-    "leaves" : load_texture("minecraft_starter/assets/textures/leaf.png"),
-    "wall" : load_texture("minecraft_starter/assets/textures/wallStone.png")
-    # Add other block textures if needed
-}
-
-mob_textures = {
-    "zombie" : load_texture("minecraft_starter/assets/textures/zombie.png")
-}
-
-mob_models = {
-    "zombie" : load_model("minecraft_starter/assets/models/AnyConv.com__zombie.obj")
-}
-
-# Block class
-class Block(Entity):
-    def __init__(self, position=(0, 0, 0), scale=(1, 1, 1), block_type="grass", **kwargs):
-        if block_type == "zombie":
-            model = mob_models.get("zombie")
-            texture = mob_textures.get("zombie")
-        else:
-            model = "minecraft_starter/assets/models/block_model"
-            texture = block_textures.get(block_type)
-
-        super().__init__(
-            position=position,
-            scale=scale,
-            origin_y=0.5,
-            model=model,
-            texture=texture,
-            collider='box',
-            **kwargs  # Allow additional parameters to be passed
-        )
-        self.block_type = block_type
-
-
-mini_block = Entity(
-  parent=camera,
-  model="minecraft_starter/assets/models/Torch",
-  texture=block_textures.get("torch"),
-  scale= 0.2,
-  position=(0.35, -0.25, 0.5),
-  rotation=(-15, -30, -5)
-)
-########################################################### GLOBAL VARIABLES ##################################################
-###############################################################################################################################
-# World settings
-world_size = 1000                                           # This creates a world with 100,489 blocks
-render_distance = 13                                         # reduce this value if you have a slow computer
-total_tiles = world_size * world_size                       # Compute total number of tiles
-total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
-num_clusters = total_obstacles // 10                        # Number of Obstacle clusters (occupies 9 tiles)
-num_single_obstacles = total_obstacles - (num_clusters * 9) # Number of Obstacle singles (occupies 1 tiles)
-player_spawn_x = world_size // 2                            # Player spawn x position
-player_spawn_z = world_size - 10                            # Player spawn z position
-player_speed = 25                                           # Player movement speed
-home_size = 30                                              # Home size x Home size
-home_min_z = world_size - (5*home_size)                     # Home min z position
-home_max_z = world_size - home_size - 10                    # Home max z position
-###############################################################################################################################
-###############################################################################################################################
+# Loading textures must occur after app in initialized
+from textures import *
+from worldGenerationFunctions import *
 
 # create boundaries
 leftWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(-1, 0, (world_size / 2) - 0.5), collider="box", visible=False)
@@ -91,68 +24,21 @@ block_positions = {}
 tile_map = []
 
 # Generate the Home
-home_tile_positions = []
-x = random.randint(0, world_size - home_size - 10)
-z = random.randint(home_min_z,home_max_z)
-for dx in range(home_size):
-    for dz in range(home_size):
-        home_tile_positions.append((x + dx, z + dz))
+home_tile_positions = homeGeneration()
             
-
-# Set to store unique obstacle positions
+# Set and Dictionaries to store unique obstacle positions
 obstacle_positions = set()
 cluster_locations = []
 single_locations = []
 
-# Place 3x3 clusters of obstacles
-for i in range(num_clusters):
-    placed = False
-    while not placed:
-        # Declaring the cluster position to be inside of the world and not outside of it
-        x = random.randint(0, world_size - 3) # x pos
-        z = random.randint(0, world_size - 3) # z pos
-        obstacleType = random.randint(1, 3) # Randomly select the obstacle type
-        
-        # create a vector<pair<int, int>> equivalent to mark the cluster obstacle positions
-        cluster_positions = [(x + dx, z + dz) for dx in range(3) for dz in range(3)]
-        # print(cluster_positions)
-        # Creates a 3x3 cluster starting at the randomly generated x and z positions
-        # Now using a nested for loop, we marks the clustered position 3 in the x from the start and 3 in the z from the start
-        
-        # cluster_positions in C++: vector<pair<int, int>> cluster_positions = {{x, z}, {x + 1, z}, {x + 2, z}, 
-        #                                                                       {x, z + 1}, {x + 1, z + 1}, {x + 2, z + 1}, 
-        #                                                                       {x, z + 2}, {x + 1, z + 2}, {x + 2, z + 2}};
-        # Now we need to check if any of the coordinates in cluster_positions are already occupied by an obstacle
-        if all((cx, cz) not in obstacle_positions and home_tile_positions for (cx, cz) in cluster_positions):
-            # if all the coordinates in cluster_positions are not in obstacle_positions
-            # meaning now the obstacle cluster CAN be placed
-            
-            # Then I should Add the cluster positions to the obstacle set
-            obstacle_positions.update(cluster_positions)
-            cluster_locations.append((cluster_positions, obstacleType))
-            placed = True
+# Generate Cluster Obstacles
+clusterGeneration(home_tile_positions, obstacle_positions, cluster_locations)
 
-# Place single tile obstacles
-while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be single tiled
-    # Declare world bounds for the obstacles
-    x = random.randint(0, world_size - 1)
-    z = random.randint(0, world_size - 1)
-    obstacleType = random.randint(1, 2) # Randomly select the obstacle type
-    
-    # If the position is not already taken by an obstacle, add it to the obstacle set
-    if (x, z) not in obstacle_positions and (x, z) not in home_tile_positions:
-        obstacle_positions.add((x, z))
-        single_locations.append(((x, z), obstacleType))
+# Generate Single Obstacles
+singlesGeneration(obstacle_positions, home_tile_positions, single_locations)
 
 # Initialize the tile map
-for x in range(world_size):
-    row = [] #declare a row to store the tile status (Free Space or Obstacle) (True or False)
-    for z in range(world_size):
-        position = (x, -5, z)
-        is_free_space = (x, z) not in obstacle_positions
-        block_positions[position] = is_free_space
-        row.append(is_free_space)
-    tile_map.append(row)
+generateMap(tile_map, block_positions, obstacle_positions)
 
 # Dictionary to keep track of visible blocks due to render distance
 visible_blocks = {}
@@ -165,16 +51,17 @@ while (player_spawn_x, player_spawn_z) in obstacle_positions:
 # initialize the player controller
 player=FirstPersonController(
   mouse_sensitivity=Vec2(100, 100), # Mouse sensitivity
-  position=(player_spawn_x, 5, player_spawn_z), # Player spawn position
+  position=(player_spawn_x, 5, home_min_z), # Player spawn position
   speed=player_speed # Player movement speed
 )
 
 # Create the night sky background
 Sky(texture="minecraft_starter/assets/textures/nightSky.png")
 
-obstacle_cluster_types = ["stone", "lava", "water"]
-obstacle_single_types = ["wood", "bedrock"]
+
 def update_visible_blocks():
+    obstacle_cluster_types = ["stone", "lava", "water"]
+    obstacle_single_types = ["wood", "bedrock"]
     player_x = int(player.x)
     player_z = int(player.z)
     for x in range(player_x - render_distance, player_x + render_distance):
@@ -231,13 +118,13 @@ def update_visible_blocks():
                                             if leaf_position not in visible_blocks: visible_blocks[leaf_position] = Block(position=leaf_position, block_type="leaves", double_sided=True)
 
                             elif block_type == "bedrock":
-                                #visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type="zombie", double_sided=True, scale=0.08)
+                                visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type="zombie", double_sided=True, scale=0.08)
                                 # Now we need to spawn a zombie on the bedrock
                                 mob_position = (x, -4, z)
                                 print("Spawning Zombie at: ", mob_position)
                                 if mob_position not in visible_mobs and mob_position not in visible_blocks:
-                                    visible_mobs[mob_position] = Block(position=mob_position, scale=0.08, block_type="zombie", double_sided=True)
-                                    visible_blocks[mob_position] = Block(position=mob_position, block_type="zombie", double_sided=True, scale=0.08)
+                                    visible_blocks[position] = Block(position=mob_position, scale=0.07, block_type="zombie", double_sided=True)
+                                    #visible_blocks[mob_position] = Block(position=mob_position, block_type="zombie", double_sided=True, scale=0.08)
                             if position not in visible_blocks:        
                                 visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
@@ -258,7 +145,7 @@ def update_visible_blocks():
 # This is an Ursina function that is called every frame
 def update():
     #Every frame, update the visible blocks
-    if player.y < -10:
+    if player.y < -10: # If player falls off the world
         player.y = 10
     update_visible_blocks()
 
