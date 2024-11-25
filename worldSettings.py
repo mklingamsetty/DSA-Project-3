@@ -1,8 +1,8 @@
-from ursina import Entity
+from ursina import *
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
-world_size = 1000                                           # This creates a world with 100,489 blocks
+world_size = 500                                            # This creates a world with 100,489 blocks
 render_distance = 8                                         # reduce this value if you have a slow computer
 total_tiles = world_size * world_size                       # Compute total number of tiles
 total_obstacles = int(0.1 * total_tiles)                    # Compute total number of obstacles (10% of total tiles)
@@ -20,5 +20,8 @@ leftWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=
 rightWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(world_size , 0, (world_size / 2) - 0.5), collider="box", visible=False)
 frontWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, world_size), collider="box", visible=False)
 backWall = Entity(model="cube", scale=(world_size + 1, world_size, 1), position=(world_size / 2, 0, -1), collider="box", visible=False)
+
+# Create the night sky background
+Sky(texture="minecraft_starter/assets/textures/nightSky.png")
 ###############################################################################################################################
 ###############################################################################################################################

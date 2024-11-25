@@ -89,7 +89,7 @@ def singlesGeneration(obstacle_positions, home_tile_positions, single_locations)
             single_locations.append(((x, z), obstacleType))
 
 # Generate the Map
-def generateMap(tile_map, block_positions, obstacle_positions):
+def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions):
         # Initialize the tile map
     for x in range(world_size):
         row = [] #declare a row to store the tile status (Free Space or Obstacle) (True or False)
@@ -97,5 +97,12 @@ def generateMap(tile_map, block_positions, obstacle_positions):
             position = (x, -5, z)
             is_free_space = (x, z) not in obstacle_positions
             block_positions[position] = is_free_space
-            row.append(is_free_space)
+            if x == player_spawn_x and z == player_spawn_z:
+                row.append("P") # P for Player
+            elif is_free_space:
+                row.append("F") # F for Free Space
+            elif (x, z) in home_tile_positions:
+                row.append("H") # H for Home
+            else:
+                row.append("O") # O for Obstacle
         tile_map.append(row)

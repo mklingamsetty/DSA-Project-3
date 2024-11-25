@@ -31,9 +31,6 @@ clusterGeneration(home_tile_positions, obstacle_positions, cluster_locations)
 # Generate Single Obstacles
 singlesGeneration(obstacle_positions, home_tile_positions, single_locations)
 
-# Initialize the tile map
-generateMap(tile_map, block_positions, obstacle_positions)
-
 # Dictionary to keep track of visible blocks due to render distance
 visible_blocks = {}
 visible_mobs = {}
@@ -49,8 +46,13 @@ player=FirstPersonController(
   speed=player_speed # Player movement speed
 )
 
-# Create the night sky background
-Sky(texture="minecraft_starter/assets/textures/nightSky.png")
+generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions)
+#print(tile_map)
+#print out if 'H' is in the tile_map
+# for i in range(len(tile_map)):
+#     for j in range(len(tile_map[i])):
+#         if "P" in tile_map[i][j]:
+#             print("P found at: ", i, ', ', j)
 
 
 def update_visible_blocks():
@@ -149,7 +151,10 @@ def update():
     #Every frame, update the visible blocks
     if player.y < -10: # If player falls off the world
         player.y = 10
-    update_visible_blocks()
+    update_visible_blocks() # constantly update the visible blocks
+    # Call the generateMap function to generate the map
+    # generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions)
+
 
 # Run the app in main function
 def main():
