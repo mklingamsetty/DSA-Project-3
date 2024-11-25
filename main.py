@@ -45,7 +45,7 @@ while (player_spawn_x, player_spawn_z) in obstacle_positions:
 # initialize the player controller
 player=FirstPersonController(
   mouse_sensitivity=Vec2(100, 100), # Mouse sensitivity
-  position=(player_spawn_x, 5, home_min_z), # Player spawn position
+  position=(player_spawn_x, 5, player_spawn_z), # Player spawn position
   speed=player_speed # Player movement speed
 )
 
@@ -54,42 +54,50 @@ Sky(texture="minecraft_starter/assets/textures/nightSky.png")
 
 
 def update_visible_blocks():
-    obstacle_cluster_types = ["stone", "lava", "water"]
-    obstacle_single_types = ["wood", "bedrock"]
-    player_x = int(player.x)
-    player_z = int(player.z)
-    for x in range(player_x - render_distance, player_x + render_distance):
-        for z in range(player_z - render_distance, player_z + render_distance):
-            position = (x, -5, z)
-            obstacle_position = (x, -4, z)
+    # Update the visible blocks based on the player's position
+
+    obstacle_cluster_types = ["stone", "lava", "water"] # Cluster obstacle types
+    obstacle_single_types = ["wood", "bedrock"] # Single obstacle types
+
+    player_x = int(player.x) # Player's x position
+    player_z = int(player.z) # Player's z position
+
+    for x in range(player_x - render_distance, player_x + render_distance): # Loop through x position +/- render_distance
+        for z in range(player_z - render_distance, player_z + render_distance): # Loop through z positions +/- render_distance
+            position = (x, -5, z) # Position of the blocks that are visible to us at the moment
+            obstacle_position = (x, -4, z) # Position of the obstacles that are visible to us at the moment
             if position in block_positions and position not in visible_blocks:
                 # Use the appropriate texture based on whether it's an obstacle
                 if block_positions[position]: 
-                    block_type = "grass"
+                    block_type = "grass" # Default block type
                     visible_blocks[position] = Block(position=position, block_type=block_type)
                     #visible_blocks[obstacle_position] = Zombie(position=obstacle_position, scale = 0.1)
                     #zombie = Entity(model=mob_models.get("zombie"), texture = mob_textures.get("zombie"), scale=0.07, double_sided=True, y = -4, x = x, z = z)
                 
+                # Check if the position is a home tile position
                 if (x, z) in home_tile_positions:
                     block_type = "wall"
                     visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
-                    middle_obstacle_position = (x, -3, z)
+                    middle_obstacle_position = (x, -3, z) # Middle obstacle position
                     visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
-                    top_obstacle_position = (x, -2, z)
+                    top_obstacle_position = (x, -2, z) # Top obstacle position
                     visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
                     visible_blocks[position] = Block(position=position, block_type=block_type)
                     
+                # Check if the position is an obstacle position
                 if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
                     # Now I need to check if (x, z) is in cluster_locations
                     for cluster_positions, obstacleType in cluster_locations:
-                        if (x, z) in cluster_positions:
+                        if (x, z) in cluster_positions: 
                             block_type = obstacle_cluster_types[obstacleType - 1]
-                            if block_type == "stone":
+                            if block_type == "stone": # If the block type is stone then we need to make it tall
                                 visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
                                 middle_obstacle_position = (x, -3, z)
                                 visible_blocks[middle_obstacle_position] = Block(position=middle_obstacle_position, scale=(1, 1, 1), block_type=block_type)
                                 top_obstacle_position = (x, -2, z)
                                 visible_blocks[top_obstacle_position] = Block(position=top_obstacle_position, scale=(1, 1, 1), block_type=block_type)
+                            
+                            # If the block type is lava and/or water we can just change the texture
                             visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
 
