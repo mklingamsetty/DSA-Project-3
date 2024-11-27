@@ -25,16 +25,15 @@ Credits/References:
    - https://sketchfab.com/3d-models/minecraft-wood-block-d498c39e40974966836fc1140c263d22
    - https://sketchfab.com/3d-models/minecraft-enderman-216552744553461d960dd0cdf3a0592a
    - https://sketchfab.com/3d-models/zombie-minecraft-9fb165f3ecf443e1af6ad2cb39f8f161
+   - https://sketchfab.com/3d-models/minecraft-creeper-fd66182f07e5408eb04fa5a88ae16055#download
+   - https://sketchfab.com/3d-models/minecraft-skeleton-3ea04380d84f498a81f07043acad19f0#download
    
 
 
 ********** DELETE EACH TASK WHEN FINISHED **********
     TASKS !!!!
-    - Changes need to be made
-        - Look into Tile map, need to redo it and add player and house position
-    - Construct our Algorithms
-        - BFS implementation
-        - DFS implementation
+    - Edit our Algorithms
+        - Both Algorithms are written out still needs to be tested
     - Player UI
         - Map
             - When the 'k' key is pressed, a new miniature window, "MAP" should now appear

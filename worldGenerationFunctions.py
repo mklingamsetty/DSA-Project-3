@@ -12,6 +12,12 @@ class Block(Entity):
         elif block_type == "enderman":
             model = "minecraft_starter/assets/models/AnyConv.com__enderman.obj"
             texture = mob_textures.get("enderman")
+        elif block_type == "creeper":
+            model = "minecraft_starter/assets/models/AnyConv.com__creeper.obj"
+            texture = mob_textures.get("creeper")
+        elif block_type == "skeleton":
+            model = "minecraft_starter/assets/models/AnyConv.com__skeleton.obj"
+            texture = mob_textures.get("skeleton")
         else:
             model = "minecraft_starter/assets/models/block_model"
             texture = block_textures.get(block_type)
@@ -84,7 +90,7 @@ def singlesGeneration(obstacle_positions, home_tile_positions, single_locations)
         # Declare world bounds for the obstacles
         x = random.randint(0, world_size - 1)
         z = random.randint(0, world_size - 1)
-        obstacleType = random.randint(1, 4) # Randomly select the obstacle type
+        obstacleType = random.randint(1, 5) # Randomly select the obstacle type
         
         # If the position is not already taken by an obstacle, add it to the obstacle set
         if (x, z) not in obstacle_positions and (x, z) not in home_tile_positions:
