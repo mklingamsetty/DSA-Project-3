@@ -23,6 +23,9 @@ Credits/References:
    - https://sketchfab.com/3d-models/minecraft-torch-e88c4214d4bc4437ae6d249237591071
    - https://www.youtube.com/watch?v=IWhA6lV_sxg&ab_channel=Codeandcraft
    - https://sketchfab.com/3d-models/minecraft-wood-block-d498c39e40974966836fc1140c263d22
+   - https://sketchfab.com/3d-models/minecraft-enderman-216552744553461d960dd0cdf3a0592a
+   - https://sketchfab.com/3d-models/zombie-minecraft-9fb165f3ecf443e1af6ad2cb39f8f161
+   
 
 
 ********** DELETE EACH TASK WHEN FINISHED **********

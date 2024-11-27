@@ -59,7 +59,7 @@ def update_visible_blocks():
     # Update the visible blocks based on the player's position
 
     obstacle_cluster_types = ["stone", "lava", "water"] # Cluster obstacle types
-    obstacle_single_types = ["wood", "bedrock"] # Single obstacle types
+    obstacle_single_types = ["wood", "bedrock", "mud", "darkstone"] # Single obstacle types
 
     player_x = int(player.x) # Player's x position
     player_z = int(player.z) # Player's z position
@@ -129,6 +129,15 @@ def update_visible_blocks():
                                 if mob_position not in visible_mobs and mob_position not in visible_blocks:
                                     visible_blocks[position] = Block(position=mob_position, scale=0.07, block_type="zombie", double_sided=True)
                                     #visible_blocks[mob_position] = Block(position=mob_position, block_type="zombie", double_sided=True, scale=0.08)
+                            elif block_type == "mud":
+                                visible_blocks[obstacle_position] = Block(position=obstacle_position, block_type="enderman", double_sided=True, scale=0.08)
+                                # Now we need to spawn a zombie on the bedrock
+                                mob_position = (x, -4, z)
+                                # print("Spawning Zombie at: ", mob_position)
+                                if mob_position not in visible_mobs and mob_position not in visible_blocks:
+                                    visible_blocks[position] = Block(position=mob_position, scale=0.10, block_type="enderman", double_sided=True)
+                                    #visible_blocks[mob_position] = Block(position=mob_position, block_type="zombie", double_sided=True, scale=0.08)
+                            
                             if position not in visible_blocks:        
                                 visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
