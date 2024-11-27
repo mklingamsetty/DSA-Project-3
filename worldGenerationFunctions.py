@@ -1,7 +1,49 @@
 from ursina import *
 import random
 from worldSettings import *
+from worldSettings import player_spawn_x, player_spawn_z, player_speed
 from textures import *
+from ursina.prefabs.first_person_controller import FirstPersonController
+
+
+class GameScreen:
+    def __init__(self):
+        self.player_spawn_x = player_spawn_x
+        self.player_spawn_z = player_spawn_z
+        self.player_speed = player_speed
+        
+        # Store all block positions in a set (unique blocks with unique positions)
+        self.block_positions = {}
+        
+        # 2D map of obstacle positions and free spaces
+        self.tile_map = []
+        
+        # Generate the Home
+        self.home_tile_positions = homeGeneration()
+        
+        # Sets and lists to store unique obstacle positions
+        self.obstacle_positions = set()
+        self.cluster_locations = []
+        self.single_locations = []
+        
+        # Generate Cluster Obstacles
+        clusterGeneration(self.home_tile_positions, self.obstacle_positions, self.cluster_locations)
+        
+        # Generate Single Obstacles
+        singlesGeneration(self.obstacle_positions, self.home_tile_positions, self.single_locations)
+          
+        # Generate the map
+        generateMap(self.tile_map, self.block_positions, self.obstacle_positions, self.home_tile_positions)
+
+        while (self.player_spawn_x, self.player_spawn_z) in self.obstacle_positions:
+            self.player_spawn_x += 1  # Adjust as necessary
+
+        # initialize the player controller
+        self.player=FirstPersonController(
+        mouse_sensitivity=Vec2(100, 100), # Mouse sensitivity
+        position=(self.player_spawn_x, 5, self.player_spawn_z), # Player spawn position
+        speed=self.player_speed # Player movement speed
+        )
 
 # Block class
 class Block(Entity):

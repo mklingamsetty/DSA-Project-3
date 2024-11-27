@@ -2,7 +2,7 @@ from ursina import *
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
-world_size = 500                                            # This creates a world with 100,489 blocks
+world_size = 500                                            # This creates a world with world_size x world_size amount of blocks (min must be 317)
 render_distance = 8                                         # reduce this value if you have a slow computer
 total_tiles = world_size * world_size                       # Compute total number of tiles
 total_obstacles = int(0.15 * total_tiles)                   # Compute total number of obstacles (10% of total tiles)

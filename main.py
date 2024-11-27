@@ -1,5 +1,4 @@
 from ursina import *
-from ursina.prefabs.first_person_controller import FirstPersonController
 import random
 
 # Initialize the app
@@ -11,49 +10,11 @@ from textures import *
 from worldGenerationFunctions import *
 from worldSettings import *
 
-# Store all block positions in a set (all unique blocks with uniqe positions)
-block_positions = {}
-
-# Will contain 2D map of obstacle positions and free spaces
-tile_map = []
-
-# Generate the Home
-home_tile_positions = homeGeneration()
-            
-# Set and Dictionaries to store unique obstacle positions
-obstacle_positions = set()
-cluster_locations = []
-single_locations = []
-
-# Generate Cluster Obstacles
-clusterGeneration(home_tile_positions, obstacle_positions, cluster_locations)
-
-# Generate Single Obstacles
-singlesGeneration(obstacle_positions, home_tile_positions, single_locations)
-
 # Dictionary to keep track of visible blocks due to render distance
 visible_blocks = {}
 visible_mobs = {}
 
-# Ensure the player doesn't spawn on an obstacle
-while (player_spawn_x, player_spawn_z) in obstacle_positions:
-    player_spawn_x += 1  # Adjust as necessary
-
-# initialize the player controller
-player=FirstPersonController(
-  mouse_sensitivity=Vec2(100, 100), # Mouse sensitivity
-  position=(player_spawn_x, 5, player_spawn_z), # Player spawn position
-  speed=player_speed # Player movement speed
-)
-
-generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions)
-#print(tile_map)
-#print out if 'H' is in the tile_map
-# for i in range(len(tile_map)):
-#     for j in range(len(tile_map[i])):
-#         if "P" in tile_map[i][j]:
-#             print("P found at: ", i, ', ', j)
-
+game_screen = GameScreen()
 
 def update_visible_blocks():
     # Update the visible blocks based on the player's position
@@ -61,23 +22,23 @@ def update_visible_blocks():
     obstacle_cluster_types = ["stone", "lava", "water"] # Cluster obstacle types
     obstacle_single_types = ["wood", "bedrock", "mud", "darkstone", "trimmedGrass"] # Single obstacle types
 
-    player_x = int(player.x) # Player's x position
-    player_z = int(player.z) # Player's z position
+    player_x = int(game_screen.player.x) # Player's x position
+    player_z = int(game_screen.player.z) # Player's z position
 
     for x in range(player_x - render_distance, player_x + render_distance): # Loop through x position +/- render_distance
         for z in range(player_z - render_distance, player_z + render_distance): # Loop through z positions +/- render_distance
             position = (x, -5, z) # Position of the blocks that are visible to us at the moment
             obstacle_position = (x, -4, z) # Position of the obstacles that are visible to us at the moment
-            if position in block_positions and position not in visible_blocks:
+            if position in game_screen.block_positions and position not in visible_blocks:
                 # Use the appropriate texture based on whether it's an obstacle
-                if block_positions[position]: 
+                if game_screen.block_positions[position]: 
                     block_type = "grass" # Default block type
                     visible_blocks[position] = Block(position=position, block_type=block_type)
                     #visible_blocks[obstacle_position] = Zombie(position=obstacle_position, scale = 0.1)
                     #zombie = Entity(model=mob_models.get("zombie"), texture = mob_textures.get("zombie"), scale=0.07, double_sided=True, y = -4, x = x, z = z)
                 
                 # Check if the position is a home tile position
-                if (x, z) in home_tile_positions:
+                if (x, z) in game_screen.home_tile_positions:
                     block_type = "wall"
                     visible_blocks[obstacle_position] = Block(position=obstacle_position, scale=(1, 1, 1), block_type=block_type)
                     middle_obstacle_position = (x, -3, z) # Middle obstacle position
@@ -87,9 +48,9 @@ def update_visible_blocks():
                     visible_blocks[position] = Block(position=position, block_type=block_type)
                     
                 # Check if the position is an obstacle position
-                if (x, z) in obstacle_positions and obstacle_position not in visible_blocks:
+                if (x, z) in game_screen.obstacle_positions and obstacle_position not in visible_blocks:
                     # Now I need to check if (x, z) is in cluster_locations
-                    for cluster_positions, obstacleType in cluster_locations:
+                    for cluster_positions, obstacleType in game_screen.cluster_locations:
                         if (x, z) in cluster_positions: 
                             block_type = obstacle_cluster_types[obstacleType - 1]
                             if block_type == "stone": # If the block type is stone then we need to make it tall
@@ -103,7 +64,7 @@ def update_visible_blocks():
                             visible_blocks[position] = Block(position=position, block_type=block_type)
                             break
 
-                    for single_position, obstacleType in single_locations:
+                    for single_position, obstacleType in game_screen.single_locations:
                         if (x, z) == single_position:
                             block_type = obstacle_single_types[obstacleType - 1]
                             if block_type == "wood":
@@ -166,7 +127,7 @@ def update_visible_blocks():
 
     # Remove mobs that are out of range
     for position in list(visible_mobs):
-        visible_mobs[position].look_at(player, 'forward')
+        visible_mobs[position].look_at(game_screen.player, 'forward')
         visible_mobs[position].rotation_x = 0
         visible_mobs[position].rotation_z = 0
         if abs(position[0] - player_x) > render_distance or abs(position[2] - player_z) > render_distance:
@@ -176,12 +137,11 @@ def update_visible_blocks():
 # This is an Ursina function that is called every frame
 def update():
     #Every frame, update the visible blocks
-    if player.y < -10: # If player falls off the world
-        player.y = 10
+    if game_screen.player.y < -10: # If player falls off the world
+        game_screen.player.y = 10
     update_visible_blocks() # constantly update the visible blocks
     # Call the generateMap function to generate the map
     # generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions)
-
 
 # Run the app in main function
 def main():
