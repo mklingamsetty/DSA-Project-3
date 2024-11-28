@@ -12,7 +12,7 @@ player_spawn_x = world_size // 2                            # Player spawn x pos
 player_spawn_z = world_size - 10                            # Player spawn z position
 player_speed = 8                                            # Player movement speed
 home_size = 30                                              # Home size x Home size
-home_min_z = world_size - (5*home_size)                     # Home min z position
+home_min_z = world_size - 960                    # Home min z position
 home_max_z = world_size - home_size - 10                    # Home max z position
 
 # create boundaries

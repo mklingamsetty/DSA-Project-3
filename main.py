@@ -1,5 +1,7 @@
 from ursina import *
+from PIL import Image, ImageDraw
 import random
+import time
 
 # Initialize the app
 app = Ursina()
@@ -14,7 +16,11 @@ from worldSettings import *
 visible_blocks = {}
 visible_mobs = {}
 
+last_save_time = time.time()
+save_interval = 5
+
 game_screen = GameScreen()
+draw = ImageDraw.Draw(game_screen.image)
 
 def update_visible_blocks():
     # Update the visible blocks based on the player's position
@@ -136,12 +142,22 @@ def update_visible_blocks():
 
 # This is an Ursina function that is called every frame
 def update():
+    global last_save_time, save_interval
     #Every frame, update the visible blocks
     if game_screen.player.y < -10: # If player falls off the world
         game_screen.player.y = 10
     update_visible_blocks() # constantly update the visible blocks
-    # Call the generateMap function to generate the map
-    # generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions)
+    
+    new_position = (int(game_screen.player.x), int(game_screen.player.z))
+    if(new_position != game_screen.current_position):
+        draw.point(new_position, fill=(255, 192, 203, 255))
+        draw.point(game_screen.current_position, fill=(0, 255, 0, 255))
+        current_time = time.time()
+        if current_time - last_save_time >= save_interval:
+            last_save_time = current_time
+            game_screen.image.save("minimap.png")
+        game_screen.current_position = new_position
+        
 
 # Run the app in main function
 def main():

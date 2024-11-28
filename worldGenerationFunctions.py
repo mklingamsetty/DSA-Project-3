@@ -45,6 +45,8 @@ class GameScreen:
         speed=self.player_speed # Player movement speed
         )
 
+        self.current_position = (self.player_spawn_x, self.player_spawn_z)
+        
         self.MiniMap = Entity(
             parent=camera.ui,
             model='quad',
@@ -56,8 +58,8 @@ class GameScreen:
         # The MiniMap will be a 2D representation of the tile_map so the beginning of the tile_map will start on the 
         # bottom left, moving towards the right and once it reaches the end 
         # of 1 row in tile_map, it will move up to the next row in tile_map
-        image = Image.new('RGB', (world_size, world_size), color=(0, 0, 0, 0))
-        draw_minimap(image, self.tile_map, self.cluster_locations, self.single_locations)
+        self.image = Image.new('RGB', (world_size, world_size), color=(0, 0, 0, 0))
+        draw_minimap(self.image, self.tile_map, self.cluster_locations, self.single_locations)
 
         
 
