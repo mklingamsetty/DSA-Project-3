@@ -25,3 +25,5 @@ mob_textures = {
     "skeleton" : load_texture("minecraft_starter/assets/textures/skeleton.png"),
     # Add other mob textures if needed
 }
+
+minimap_texture = {"minimap" : load_texture("minecraft_starter/assets/textures/minimap.png")}

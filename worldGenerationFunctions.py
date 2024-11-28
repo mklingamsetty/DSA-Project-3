@@ -41,14 +41,14 @@ class GameScreen:
         # initialize the player controller
         self.player=FirstPersonController(
         mouse_sensitivity=Vec2(100, 100), # Mouse sensitivity
-        position=(self.player_spawn_x, 5, self.player_spawn_z), # Player spawn position
+        position=(self.player_spawn_x, 7, self.player_spawn_z), # Player spawn position
         speed=self.player_speed # Player movement speed
         )
 
         self.MiniMap = Entity(
             parent=camera.ui,
             model='quad',
-            color=color.black,
+            texture = minimap_texture.get("minimap"),
             position=(0.6, 0.35),
             scale=(0.3, 0.3)
         )
