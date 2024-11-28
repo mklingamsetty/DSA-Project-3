@@ -1,9 +1,9 @@
 from ursina import *
 import random
 from worldSettings import *
-from worldSettings import player_spawn_x, player_spawn_z, player_speed
 from textures import *
 from ursina.prefabs.first_person_controller import FirstPersonController
+from PIL import Image, ImageDraw
 
 
 class GameScreen:
@@ -11,7 +11,7 @@ class GameScreen:
         self.player_spawn_x = player_spawn_x
         self.player_spawn_z = player_spawn_z
         self.player_speed = player_speed
-        
+       
         # Store all block positions in a set (unique blocks with unique positions)
         self.block_positions = {}
         
@@ -44,6 +44,22 @@ class GameScreen:
         position=(self.player_spawn_x, 5, self.player_spawn_z), # Player spawn position
         speed=self.player_speed # Player movement speed
         )
+
+        self.MiniMap = Entity(
+            parent=camera.ui,
+            model='quad',
+            color=color.black,
+            position=(0.6, 0.35),
+            scale=(0.3, 0.3)
+        )
+        # Now starting at the bottomLeft corner of the MiniMap, we will use the tile_map 2D List to draw on the MiniMap
+        # The MiniMap will be a 2D representation of the tile_map so the beginning of the tile_map will start on the 
+        # bottom left, moving towards the right and once it reaches the end 
+        # of 1 row in tile_map, it will move up to the next row in tile_map
+        image = Image.new('RGB', (world_size, world_size), color=(0, 0, 0, 0))
+        draw_minimap(image, self.tile_map, self.cluster_locations, self.single_locations)
+
+        
 
 # Block class
 class Block(Entity):
@@ -84,6 +100,33 @@ mini_block = Entity(
   position=(0.35, -0.25, 0.5),
   rotation=(-15, -30, -5)
 )
+
+# Draw the texture for the MiniMap
+def draw_minimap(image, tile_map, cluster_locations, single_locations):
+    draw = ImageDraw.Draw(image)
+    for x in range(world_size):
+        for z in range(world_size):
+            if tile_map[x][z] == "O":
+                color = (255, 0, 0, 255)
+                # if(x, z) in cluster_locations and cluster_locations[(x, z)] == 1:
+                #     color = (0, 0, 0, 255)  # Black
+                # elif(x, z) in cluster_locations and cluster_locations[(x, z)] == 2:
+                #     color = (255, 0, 0, 255)  # Red
+                # elif(x, z) in cluster_locations and cluster_locations[(x, z)] == 3:
+                #     color = (0, 0, 255, 255) # blue
+                # elif(x, z) in single_locations and single_locations[(x, z)] == 1:
+                #     color = (0, 100, 0, 255) # dark green (Tree)
+                # else:
+                #     color = (128, 0, 128, 255) # Purple (mobs)
+            elif tile_map[x][z] == "H":
+                color = (139, 69, 19, 255)  # Brown
+            elif tile_map[x][z] == "P":
+                color = (255, 192, 203, 255)  # Pink
+            else:
+                color = (0, 255, 0, 255)  # Green
+            draw.point((x, z), fill=color)
+    image.save("minimap.png")
+    print("MiniMap Created")
 
 # Generate Home Structure
 def homeGeneration():
