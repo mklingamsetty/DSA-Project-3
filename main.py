@@ -23,9 +23,11 @@ game_screen = GameScreen()
 draw = ImageDraw.Draw(game_screen.image)
 
 rectangle_entity = None
+map = None
 
 def input(key):
     global rectangle_entity
+    global map
     # Check if the player presses the 'q' key
     if key == 'q':
         # Quit the game
@@ -38,12 +40,20 @@ def input(key):
                 scale=(10, 10),
                 color=color.black,
                 position=(4, 4),
-                parent=camera.ui
+                parent=camera.ui,
             )
+            map = Entity(
+            parent=camera.ui,
+            model='quad',
+            position=(-0.4, 0),
+            scale=(0.9, 0.9)
+            )
+            map.texture = "minimap.png"
             print("Rectangle Entity Created")
     elif key == 'r':
         if rectangle_entity:
             destroy(rectangle_entity)
+            destroy(map)
             rectangle_entity = None
     
 
