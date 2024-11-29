@@ -17,7 +17,7 @@ visible_blocks = {}
 visible_mobs = {}
 
 last_save_time = time.time()
-save_interval = 5
+save_interval = 2
 
 game_screen = GameScreen()
 draw = ImageDraw.Draw(game_screen.image)
@@ -68,7 +68,6 @@ def input(key):
             destroy(text_entity)
             rectangle_entity = None
     
-
 def update_visible_blocks():
     # Update the visible blocks based on the player's position
 
@@ -196,15 +195,24 @@ def update():
         game_screen.player.y = 10
     update_visible_blocks() # constantly update the visible blocks
     
-    new_position = (int(game_screen.player.x), int(game_screen.player.z))
+    # Define your world size
+    player_x = int(game_screen.player.x)
+    player_z = int(game_screen.player.z)
+    mirrored_x = world_size - player_x - 1
+    new_position = (mirrored_x, player_z)
+
+
+    #new_position = (int(game_screen.player.x), int(game_screen.player.z))
     if(new_position != game_screen.current_position):
         draw.point(new_position, fill=(255, 192, 203, 255))
         draw.point(game_screen.current_position, fill=(0, 255, 0, 255))
-        current_time = time.time()
-        if current_time - last_save_time >= save_interval:
-            last_save_time = current_time
-            game_screen.image.save("minimap.png")
-        game_screen.current_position = new_position
+    current_time = time.time()
+    game_screen.current_position = new_position
+    if current_time - last_save_time >= save_interval:
+        last_save_time = current_time
+        #game_screen.image = game_screen.image.transpose(Image.FLIP_LEFT_RIGHT)
+        #game_screen.image = game_screen.image.transpose(Image.ROTATE_90)
+        game_screen.image.save("minimap.png")
         
 
 # Run the app in main function

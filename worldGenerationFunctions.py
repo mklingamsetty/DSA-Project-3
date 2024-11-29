@@ -109,23 +109,15 @@ def draw_minimap(image, tile_map, cluster_locations, single_locations):
         for z in range(world_size):
             if tile_map[x][z] == "O":
                 color = (255, 0, 0, 255)  # Red
-                # if(x, z) in cluster_locations and cluster_locations[(x, z)] == 1:
-                #     color = (0, 0, 0, 255)  # Black
-                # elif(x, z) in cluster_locations and cluster_locations[(x, z)] == 2:
-                #     color = (255, 0, 0, 255)  # Red
-                # elif(x, z) in cluster_locations and cluster_locations[(x, z)] == 3:
-                #     color = (0, 0, 255, 255) # blue
-                # elif(x, z) in single_locations and single_locations[(x, z)] == 1:
-                #     color = (0, 100, 0, 255) # dark green (Tree)
-                # else:
-                #     color = (128, 0, 128, 255) # Purple (mobs)
             elif tile_map[x][z] == "H":
                 color = (139, 69, 19, 255)  # Brown
             elif tile_map[x][z] == "P":
                 color = (255, 192, 203, 255)  # Pink
             else:
                 color = (0, 255, 0, 255)  # Green
-            draw.point((x, z), fill=color)
+            #draw.point((world_size - x - 1, world_size - z - 1), fill=color)
+            draw.point((world_size - x - 1, z), fill=color)
+    #image = image.transpose(Image.ROTATE_90)
     image.save("minimap.png")
     print("MiniMap Created")
 
