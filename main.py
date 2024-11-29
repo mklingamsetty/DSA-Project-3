@@ -23,12 +23,6 @@ game_screen = GameScreen()
 draw = ImageDraw.Draw(game_screen.image)
 
 rectangle_entity = None
-rectangle_entity_spawned = Entity(
-                model='quad',
-                scale=(10, 10),
-                color=color.azure,
-                position=(5, 5)
-            )
 
 def input(key):
     global rectangle_entity
@@ -39,14 +33,15 @@ def input(key):
     elif key == 'm':
         print("I pressed m")
         if not rectangle_entity:
-            rectangle_entity = Entity(
+            rectangle_entity = Button(
                 model='quad',
                 scale=(10, 10),
-                color=color.azure,
-                position=(5, 5)
+                color=color.black,
+                position=(4, 4),
+                parent=camera.ui
             )
             print("Rectangle Entity Created")
-    elif key == 'g':
+    elif key == 'r':
         if rectangle_entity:
             destroy(rectangle_entity)
             rectangle_entity = None
