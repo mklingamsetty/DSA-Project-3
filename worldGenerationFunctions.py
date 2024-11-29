@@ -2,6 +2,7 @@ from ursina import *
 import random
 from worldSettings import *
 from textures import *
+from algorithms import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from PIL import Image, ImageDraw
 
@@ -45,7 +46,7 @@ class GameScreen:
         speed=self.player_speed # Player movement speed
         )
 
-        self.current_position = (self.player_spawn_x, self.player_spawn_z)
+        self.current_position = (int(self.player_spawn_x), int(self.player_spawn_z))
         
         self.MiniMap = Entity(
             parent=camera.ui,
@@ -58,7 +59,8 @@ class GameScreen:
         # bottom left, moving towards the right and once it reaches the end 
         # of 1 row in tile_map, it will move up to the next row in tile_map
         self.image = Image.new('RGB', (world_size, world_size), color=(0, 0, 0, 0))
-        draw_minimap(self.image, self.tile_map, self.cluster_locations, self.single_locations)
+        self.colorMap = []
+        draw_minimap(self.image, self.tile_map, self.colorMap)
         self.MiniMap.texture = "minimap.png"
         
 
@@ -103,29 +105,39 @@ mini_block = Entity(
 )
 
 # Draw the texture for the MiniMap
-def draw_minimap(image, tile_map, cluster_locations, single_locations):
+def draw_minimap(image, tile_map, colorMap):
+    
+    colorChar = ''
     draw = ImageDraw.Draw(image)
     for x in range(world_size):
+        row = []
         for z in range(world_size):
             if tile_map[x][z] == "O":
                 color = (255, 0, 0, 255)  # Red
+                colorChar = 'R'
             elif tile_map[x][z] == "H":
                 color = (139, 69, 19, 255)  # Brown
+                colorChar = 'B'
             elif tile_map[x][z] == "P":
                 color = (255, 192, 203, 255)  # Pink
+                colorChar = 'P'
             else:
                 color = (0, 255, 0, 255)  # Green
+                colorChar = 'G'
             #draw.point((world_size - x - 1, world_size - z - 1), fill=color)
             draw.point((world_size - x - 1, z), fill=color)
+            row.append(colorChar)
+        colorMap.append(row)
     #image = image.transpose(Image.ROTATE_90)
+    
     image.save("minimap.png")
     print("MiniMap Created")
 
 # Generate Home Structure
 def homeGeneration():
     home_tile_positions = []
-    x = random.randint(0, world_size - home_size - 10)
-    z = random.randint(home_min_z, home_max_z)
+    z = random.randint(home_min_z, world_size)
+    x = random.randint(home_min_z, home_max_z)
     for dx in range(home_size):
         for dz in range(home_size):
             home_tile_positions.append((x + dx, z + dz))

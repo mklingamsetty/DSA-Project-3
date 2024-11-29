@@ -24,11 +24,13 @@ draw = ImageDraw.Draw(game_screen.image)
 
 rectangle_entity = None
 map = None
+mPressed = False
 
 def input(key):
     global rectangle_entity
     global map
     global text_entity  # Add a variable to store the text entity
+    global mPressed
     #global DFSTest
     #global BFSTest
     # Check if the player presses the 'q' key
@@ -36,6 +38,7 @@ def input(key):
         # Quit the game
         application.quit()
     elif key == 'm':
+        mPressed = True
         print("I pressed m")
         if not rectangle_entity:
             rectangle_entity = Button(
@@ -54,19 +57,27 @@ def input(key):
             map.texture = "minimap.png"
             # Add text next to the rectangle
             text_entity = Text(
-                text="B for BFS & D for DFS",
-                position=(0.2, 0),
+                text="Please Choose an Algorithm: \n Press 'B' for BFS \n Press 'D' for DFS",
+                position=(0.1, 0),
                 parent=camera.ui,
                 scale=2,
                 color=color.white
             )
             print("Rectangle Entity Created")
+    elif key == 'b' and mPressed:
+        print("BFS Algorithm")
+        BFS(game_screen.image, draw, game_screen.tile_map)
+    elif key == 'd' and mPressed:
+        print("DFS Algorithm")
+        DFS(game_screen.image, draw, game_screen.tile_map)
     elif key == 'r':
         if rectangle_entity:
             destroy(rectangle_entity)
             destroy(map)
             destroy(text_entity)
             rectangle_entity = None
+            mPressed = False
+    
     
 def update_visible_blocks():
     # Update the visible blocks based on the player's position
@@ -200,7 +211,6 @@ def update():
     player_z = int(game_screen.player.z)
     mirrored_x = world_size - player_x - 1
     new_position = (mirrored_x, player_z)
-
 
     #new_position = (int(game_screen.player.x), int(game_screen.player.z))
     if(new_position != game_screen.current_position):
