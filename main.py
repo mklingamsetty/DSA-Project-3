@@ -22,6 +22,36 @@ save_interval = 5
 game_screen = GameScreen()
 draw = ImageDraw.Draw(game_screen.image)
 
+rectangle_entity = None
+rectangle_entity_spawned = Entity(
+                model='quad',
+                scale=(10, 10),
+                color=color.azure,
+                position=(5, 5)
+            )
+
+def input(key):
+    global rectangle_entity
+    # Check if the player presses the 'q' key
+    if key == 'q':
+        # Quit the game
+        application.quit()
+    elif key == 'm':
+        print("I pressed m")
+        if not rectangle_entity:
+            rectangle_entity = Entity(
+                model='quad',
+                scale=(10, 10),
+                color=color.azure,
+                position=(5, 5)
+            )
+            print("Rectangle Entity Created")
+    elif key == 'g':
+        if rectangle_entity:
+            destroy(rectangle_entity)
+            rectangle_entity = None
+    
+
 def update_visible_blocks():
     # Update the visible blocks based on the player's position
 
@@ -143,6 +173,7 @@ def update_visible_blocks():
 # This is an Ursina function that is called every frame
 def update():
     global last_save_time, save_interval
+    
     #Every frame, update the visible blocks
     if game_screen.player.y < -10: # If player falls off the world
         game_screen.player.y = 10
@@ -161,6 +192,7 @@ def update():
 
 # Run the app in main function
 def main():
+    
     update() # Call update function
     app.run() # Run the app
 

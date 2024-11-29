@@ -50,7 +50,6 @@ class GameScreen:
         self.MiniMap = Entity(
             parent=camera.ui,
             model='quad',
-            texture = minimap_texture.get("minimap"),
             position=(0.6, 0.35),
             scale=(0.3, 0.3)
         )
@@ -60,7 +59,7 @@ class GameScreen:
         # of 1 row in tile_map, it will move up to the next row in tile_map
         self.image = Image.new('RGB', (world_size, world_size), color=(0, 0, 0, 0))
         draw_minimap(self.image, self.tile_map, self.cluster_locations, self.single_locations)
-
+        self.MiniMap.texture = "minimap.png"
         
 
 # Block class
@@ -109,7 +108,7 @@ def draw_minimap(image, tile_map, cluster_locations, single_locations):
     for x in range(world_size):
         for z in range(world_size):
             if tile_map[x][z] == "O":
-                color = (255, 0, 0, 255)
+                color = (255, 0, 0, 255) # Purple
                 # if(x, z) in cluster_locations and cluster_locations[(x, z)] == 1:
                 #     color = (0, 0, 0, 255)  # Black
                 # elif(x, z) in cluster_locations and cluster_locations[(x, z)] == 2:
