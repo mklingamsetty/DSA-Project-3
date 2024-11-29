@@ -28,6 +28,9 @@ map = None
 def input(key):
     global rectangle_entity
     global map
+    global text_entity  # Add a variable to store the text entity
+    #global DFSTest
+    #global BFSTest
     # Check if the player presses the 'q' key
     if key == 'q':
         # Quit the game
@@ -49,11 +52,20 @@ def input(key):
             scale=(0.9, 0.9)
             )
             map.texture = "minimap.png"
+            # Add text next to the rectangle
+            text_entity = Text(
+                text="B for BFS & D for DFS",
+                position=(0.2, 0),
+                parent=camera.ui,
+                scale=2,
+                color=color.white
+            )
             print("Rectangle Entity Created")
     elif key == 'r':
         if rectangle_entity:
             destroy(rectangle_entity)
             destroy(map)
+            destroy(text_entity)
             rectangle_entity = None
     
 

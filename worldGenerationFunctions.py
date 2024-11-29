@@ -108,7 +108,7 @@ def draw_minimap(image, tile_map, cluster_locations, single_locations):
     for x in range(world_size):
         for z in range(world_size):
             if tile_map[x][z] == "O":
-                color = (255, 0, 0, 255) # Purple
+                color = (255, 0, 0, 255)  # Red
                 # if(x, z) in cluster_locations and cluster_locations[(x, z)] == 1:
                 #     color = (0, 0, 0, 255)  # Black
                 # elif(x, z) in cluster_locations and cluster_locations[(x, z)] == 2:
