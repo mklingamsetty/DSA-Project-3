@@ -73,10 +73,12 @@ def input(key):
         print("BFS Algorithm")
         doBFS = True
         path = game_screen.BFS()
+        map.texture = "minimapAlgorithmPathBFS.png"
     elif key == 'd' and mPressed:
         print("DFS Algorithm")
         doDFS = True
         path = game_screen.DFS()
+        map.texture = "minimapAlgorithmPathDFS.png"
     elif key == 'r':
         if rectangle_entity:
             destroy(rectangle_entity)

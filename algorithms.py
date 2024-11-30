@@ -114,7 +114,7 @@ def DFS(image, draw, tile_map):
 
     while stack:
         current = stack.pop()
-        if current == goal:
+        if current in goal:
             # Reconstruct the path
             path = []
             while current != start:
