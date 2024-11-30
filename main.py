@@ -23,14 +23,19 @@ game_screen = GameScreen()
 draw = ImageDraw.Draw(game_screen.image)
 
 rectangle_entity = None
-map = None
+doBFS = False
+doDFS = False
+map = Entity()
 mPressed = False
+index = 0
+path = None
 
 def input(key):
     global rectangle_entity
     global map
     global text_entity  # Add a variable to store the text entity
     global mPressed
+    global doBFS, doDFS
     #global DFSTest
     #global BFSTest
     # Check if the player presses the 'q' key
@@ -66,10 +71,12 @@ def input(key):
             print("Rectangle Entity Created")
     elif key == 'b' and mPressed:
         print("BFS Algorithm")
-        BFS(game_screen.image, draw, game_screen.tile_map)
+        doBFS = True
+        path = game_screen.BFS()
     elif key == 'd' and mPressed:
         print("DFS Algorithm")
-        DFS(game_screen.image, draw, game_screen.tile_map)
+        doDFS = True
+        path = game_screen.DFS()
     elif key == 'r':
         if rectangle_entity:
             destroy(rectangle_entity)
@@ -198,8 +205,8 @@ def update_visible_blocks():
             del visible_mobs[position]
 
 # This is an Ursina function that is called every frame
-def update():
-    global last_save_time, save_interval
+def update(algorithmDraw=False, coordinates=None):
+    global last_save_time, save_interval, doBFS, doDFS, map, index, path
     
     #Every frame, update the visible blocks
     if game_screen.player.y < -10: # If player falls off the world
@@ -223,7 +230,7 @@ def update():
         #game_screen.image = game_screen.image.transpose(Image.FLIP_LEFT_RIGHT)
         #game_screen.image = game_screen.image.transpose(Image.ROTATE_90)
         game_screen.image.save("minimap.png")
-        
+
 
 # Run the app in main function
 def main():

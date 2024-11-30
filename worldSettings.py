@@ -2,7 +2,7 @@ from ursina import *
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
-world_size = 1000                                           # This creates a world with world_size x world_size amount of blocks (min must be 317)
+world_size = 317                                            # This creates a world with world_size x world_size amount of blocks (min must be 317)
 render_distance = 8                                         # reduce this value if you have a slow computer
 total_tiles = world_size * world_size                       # Compute total number of tiles
 total_obstacles = int(0.15 * total_tiles)                   # Compute total number of obstacles (10% of total tiles)
@@ -12,8 +12,8 @@ player_spawn_x = world_size // 2                            # Player spawn x pos
 player_spawn_z = world_size - 10                            # Player spawn z position
 player_speed = 8                                            # Player movement speed
 home_size = 30                                              # Home size x Home size
-home_min_z = world_size - 960                    # Home min z position
-home_max_z = world_size - home_size - 10                    # Home max z position
+home_min_z = world_size - 80                    # Home min z position
+home_max_z = world_size - 50                    # Home max z position
 
 # create boundaries
 leftWall = Entity(model="cube", scale=(1, world_size, world_size + 1), position=(-1, 0, (world_size / 2) - 0.5), collider="box", visible=False)

@@ -2,9 +2,10 @@ from ursina import *
 import random
 from worldSettings import *
 from textures import *
-from algorithms import *
+#from algorithms import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from PIL import Image, ImageDraw
+from collections import deque
 
 
 class GameScreen:
@@ -62,7 +63,165 @@ class GameScreen:
         self.colorMap = []
         draw_minimap(self.image, self.tile_map, self.colorMap)
         self.MiniMap.texture = "minimap.png"
-        
+        self.draw = ImageDraw.Draw(self.image)
+        self.map = None
+        self.texture_counter = 0
+
+    def setMap(self, map_entity):
+        self.map = map_entity
+   
+
+    def BFS(self):
+        print("algorithm started")
+        tile_map = self.tile_map
+        image = self.image
+        draw = self.draw
+        # Breadth First Search Algorithm
+        # This algorithm will find the shortest path between the player and the home
+        # The algorithm will return a list of coordinates (x, z) that represent the path from the player to the home
+        # The algorithm will return None if no path is found
+        # The algorithm will return None if the player is already at the home
+        # The algorithm will return None if the home is blocked by obstacles
+        # The algorithm will return None if the home is unreachable from the player's position
+
+        # The algorithm will use a queue to keep track of the nodes to visit
+        # Implemention of the BFS algorithm here
+        rows = len(tile_map)
+        cols = len(tile_map[0])
+
+        # Find the player's and home's position
+        start = None
+        goal = []
+        for i in range(rows):
+            for j in range(cols):
+                if tile_map[i][j] == 'P':  # 'P' represents the player
+                    start = (i, j)
+                elif tile_map[i][j] == 'H':  # 'H' represents the home
+                    goal.append((i, j))
+
+        if start is None or goal is None:
+            return None  # Player or home not found
+
+        if start in goal:
+            return None  # Player is already at home
+
+        queue = deque([start])
+        visited = set([start])
+        parent = {}
+
+        # Possible movements: up, down, left, right
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+        while queue:
+            current = queue.popleft()
+            print(f"Current: {current}")
+            if current in goal:
+                # Reconstruct the path
+                self.image.save("minimapAlgorithmVisitedBFS.png")
+
+                path = []
+                while current != start:
+                    path.append(current)
+                    current = parent[current]
+                path.append(start)
+
+                # Reverse the path to get the correct order from start to goal
+                path.reverse()
+                print("algorithm complete")
+                
+                for x, z in path:
+                    draw.point((world_size - x - 1, z), fill=(0, 0, 255, 255))
+                self.image.save("minimapAlgorithmPathBFS.png")
+
+                return path  # List of tuples from start to goal
+
+            for d in directions:
+                neighbor = (current[0] + d[0], current[1] + d[1])
+                print(f"Neighbor: {neighbor}")
+                if (0 <= neighbor[0] < rows) and (0 <= neighbor[1] < cols):
+                    if tile_map[neighbor[0]][neighbor[1]] != 'O' and neighbor not in visited:  # 'O' represents obstacles
+                        queue.append(neighbor)
+                        visited.add(neighbor)
+                        parent[neighbor] = current
+                        draw.point((world_size - neighbor[0] - 1, neighbor[1]), fill=(128, 0, 128, 255))
+        print("No path found")
+        return None  # No path found
+
+    def DFS(self):
+        print("DFS algorithm started")
+        tile_map = self.tile_map
+        image = self.image
+        draw = self.draw
+        # Depth First Search Algorithm
+        # This algorithm will find the shortest path between the player and the home
+        # The algorithm will return a list of coordinates (x, z) that represent the path from the player to the home
+        # The algorithm will return None if no path is found
+        # The algorithm will return None if the player is already at the home
+        # The algorithm will return None if the home is blocked by obstacles
+        # The algorithm will return None if the home is unreachable from the player's position
+
+        # The algorithm will use a stack to keep track of the nodes to visit
+        # Implemention of the DFS algorithm here
+        rows = len(tile_map)
+        cols = len(tile_map[0])
+
+        # Find the player's and home's position
+        start = None
+        goal = []
+        for i in range(rows):
+            for j in range(cols):
+                if tile_map[i][j] == 'P':  # 'P' represents the player
+                    start = (i, j)
+                elif tile_map[i][j] == 'H':  # 'H' represents the home
+                    goal.append((i, j))
+
+        if start is None or goal is None:
+            return None  # Player or home not found
+
+        if start in goal:
+            return None  # Player is already at home
+
+        stack = [start]
+        visited = set([start])
+        parent = {}
+
+        # Possible movements: up, down, left, right
+        directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+
+        while stack:
+            current = stack.pop()
+            print(f"Current: {current}")
+            if current in goal:
+                self.image.save("minimapAlgorithmVisitedDFS.png")
+                # Reconstruct the path
+                path = []
+                while current != start:
+                    path.append(current)
+                    current = parent[current]
+                path.append(start)
+
+                # Reverse the path to get the correct order from start to goal
+                path.reverse()
+                print("DFS algorithm complete")
+                
+                for x, z in path:
+                    draw.point((world_size - x - 1, z), fill=(0, 0, 255, 255))
+                self.image.save("minimapAlgorithmPathDFS.png")
+                print("DFS algorithm complete")
+                return path  # List of tuples from start to goal
+
+            for d in directions:
+                neighbor = (current[0] + d[0], current[1] + d[1])
+                if (0 <= neighbor[0] < rows) and (0 <= neighbor[1] < cols):
+                    if tile_map[neighbor[0]][neighbor[1]] != 'O' and neighbor not in visited:  # 'O' represents obstacles
+                        stack.append(neighbor)
+                        visited.add(neighbor)
+                        #fill will be purple
+                        draw.point((world_size - neighbor[0] - 1, neighbor[1]), fill=(128, 0, 128, 255))
+                        parent[neighbor] = current
+                        
+        return None  # No path found
+            
 
 # Block class
 class Block(Entity):
@@ -136,8 +295,8 @@ def draw_minimap(image, tile_map, colorMap):
 # Generate Home Structure
 def homeGeneration():
     home_tile_positions = []
-    z = random.randint(home_min_z, world_size)
     x = random.randint(home_min_z, home_max_z)
+    z = random.randint(0, world_size - home_size - 10)
     for dx in range(home_size):
         for dz in range(home_size):
             home_tile_positions.append((x + dx, z + dz))

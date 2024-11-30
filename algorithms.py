@@ -6,7 +6,7 @@ import time
 # This file will contain the algorithms used for finding the shortest path between the player and the home
 
 def BFS(image, draw, tile_map):
-    
+    print("algorithm started")
     # Breadth First Search Algorithm
     # This algorithm will find the shortest path between the player and the home
     # The algorithm will return a list of coordinates (x, z) that represent the path from the player to the home
@@ -55,6 +55,7 @@ def BFS(image, draw, tile_map):
 
             # Reverse the path to get the correct order from start to goal
             path.reverse()
+            print("algorithm complete")
             return path  # List of tuples from start to goal
         
         last_save_time = time.time()
