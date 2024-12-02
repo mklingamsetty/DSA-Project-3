@@ -362,11 +362,29 @@ def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positio
                 row.append("O") # O for Obstacle
         tile_map.append(row)
 
-def colorMap(algorithm, colorMap, path):
-    if algorithm == "BFS":
-        color = (0, 0, 255, 255) # Blue
-    elif algorithm == "DFS":
-        color = (0, 255, 0, 255) # Green
+def update_blocks_on_path(game, path, block_type):
+    """
+    Updates blocks in the 3D world along a given path.
+    """
+    world_size = game.game_screen.settings.get_world_size()
+
     for x, z in path:
-        colorMap[x][z] = color
-    return colorMap
+        # Ensure coordinates are within world bounds
+        if 0 <= x < world_size and 0 <= z < world_size:
+            world_position = (x, -5, z)  # Convert to 3D world coordinates
+            if world_position in game.game_screen.block_positions:
+                block = game.visible_blocks.get(world_position)
+                if block:
+                    # Update existing block to the new type
+                    block.block_type = block_type
+                    block.texture = block_textures.get(block_type)
+                else:
+                    # Add new block for the path
+                    game.visible_blocks[world_position] = Block(
+                        position=world_position, block_type=block_type
+                    )
+            # Persist in block_positions to ensure it isn't culled by render logic
+            game.game_screen.block_positions[world_position] = False
+
+
+

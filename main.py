@@ -207,18 +207,14 @@ game = Game()
 def input(key):
     rectangle_entity = game.get_rectangle_entity()
     map = game.get_map()
-    # Add a variable to store the text entity
     mPressed = game.get_mPressed()
-    text_entity = Text()
-    #global DFSTest
-    #global BFSTest
-    # Check if the player presses the 'q' key
+    global text_entity
+    path = game.path
+
     if key == 'q':
-        # Quit the game
         application.quit()
     elif key == 'm':
         mPressed = True
-        print("I pressed m")
         if not rectangle_entity:
             rectangle_entity = Button(
                 model='quad',
@@ -228,13 +224,12 @@ def input(key):
                 parent=camera.ui,
             )
             map = Entity(
-            parent=camera.ui,
-            model='quad',
-            position=(-0.4, 0),
-            scale=(0.9, 0.9)
+                parent=camera.ui,
+                model='quad',
+                position=(-0.4, 0),
+                scale=(0.9, 0.9)
             )
             map.texture = "minimap.png"
-            # Add text next to the rectangle
             text_entity = Text(
                 text="Please Choose an Algorithm: \n Press 'B' for BFS \n Press 'D' for DFS",
                 position=(0.1, 0),
@@ -242,25 +237,31 @@ def input(key):
                 scale=2,
                 color=color.white
             )
-            print("Rectangle Entity Created")
     elif key == 'b' and mPressed:
         print("BFS Algorithm")
-        path = game.game_screen.BFS()
-        map.texture = "minimapAlgorithmPathBFS.png"
+        path = game.game_screen.BFS()  # Compute the path
+        if path:
+            update_blocks_on_path(game, path, "redstone")  # Place redstone blocks
+        game.map.texture = "minimapAlgorithmPathBFS.png"  # Update the minimap texture
+
     elif key == 'd' and mPressed:
         print("DFS Algorithm")
-        path = game.game_screen.DFS()
-        map.texture = "minimapAlgorithmPathDFS.png"
+        path = game.game_screen.DFS()  # Compute the path
+        if path:
+            update_blocks_on_path(game, path, "bluestone")  # Place bluestone blocks
+        game.map.texture = "minimapAlgorithmPathDFS.png"  # Update the minimap texture
+
     elif key == 'r':
         if rectangle_entity:
             destroy(rectangle_entity)
             destroy(map)
             destroy(text_entity)
-            destroy(text_entity)
             rectangle_entity = None
             mPressed = False
-    
-    
+        # if (path == game.game_screen.BFS()):
+        #     update_blocks_on_path(game, path, "redstone")
+        # if (path == game.game_screen.DFS()):
+        #     update_blocks_on_path(game, path, "bluestone")
     game.set_rectangle_entity(rectangle_entity)
     game.set_map(map)
     game.set_mPressed(mPressed)
