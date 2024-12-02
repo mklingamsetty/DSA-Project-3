@@ -2,17 +2,16 @@ from ursina import *
 import random
 from worldSettings import *
 from textures import *
-#from algorithms import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from PIL import Image, ImageDraw
 from collections import deque
 
-
 class GameScreen:
     def __init__(self):
-        self.player_spawn_x = player_spawn_x
-        self.player_spawn_z = player_spawn_z
-        self.player_speed = player_speed
+        self.settings = worldSettings()
+        self.player_spawn_x = self.settings.get_player_spawn_x()
+        self.player_spawn_z = self.settings.get_player_spawn_z()
+        self.player_speed = self.settings.get_player_speed()
        
         # Store all block positions in a set (unique blocks with unique positions)
         self.block_positions = {}
@@ -21,7 +20,7 @@ class GameScreen:
         self.tile_map = []
         
         # Generate the Home
-        self.home_tile_positions = homeGeneration()
+        self.home_tile_positions = homeGeneration(self)
         
         # Sets and lists to store unique obstacle positions
         self.obstacle_positions = set()
@@ -29,13 +28,13 @@ class GameScreen:
         self.single_locations = []
         
         # Generate Cluster Obstacles
-        clusterGeneration(self.home_tile_positions, self.obstacle_positions, self.cluster_locations)
+        clusterGeneration(self.home_tile_positions, self.obstacle_positions, self.cluster_locations, self.settings)
         
         # Generate Single Obstacles
-        singlesGeneration(self.obstacle_positions, self.home_tile_positions, self.single_locations)
+        singlesGeneration(self.obstacle_positions, self.home_tile_positions, self.single_locations, self.settings)
           
         # Generate the map
-        generateMap(self.tile_map, self.block_positions, self.obstacle_positions, self.home_tile_positions)
+        generateMap(self.tile_map, self.block_positions, self.obstacle_positions, self.home_tile_positions, self.settings)
 
         while (self.player_spawn_x, self.player_spawn_z) in self.obstacle_positions:
             self.player_spawn_x += 1  # Adjust as necessary
@@ -59,18 +58,27 @@ class GameScreen:
         # The MiniMap will be a 2D representation of the tile_map so the beginning of the tile_map will start on the 
         # bottom left, moving towards the right and once it reaches the end 
         # of 1 row in tile_map, it will move up to the next row in tile_map
-        self.image = Image.new('RGB', (world_size, world_size), color=(0, 0, 0, 0))
+        self.image = Image.new('RGB', (self.settings.get_world_size(), self.settings.get_world_size()), color=(0, 0, 0, 0))
         self.colorMap = []
-        draw_minimap(self.image, self.tile_map, self.colorMap)
+        draw_minimap(self.image, self.tile_map, self.colorMap, self.settings)
         self.MiniMap.texture = "minimap.png"
         self.draw = ImageDraw.Draw(self.image)
         self.map = None
         self.texture_counter = 0
 
+        self.mini_block = Entity(
+            parent=camera,
+            model="minecraft_starter/assets/models/Torch",
+            texture=block_textures.get("torch"),
+            scale= 0.2,
+            position=(0.35, -0.25, 0.5),
+            rotation=(-15, -30, -5)
+        )
+
+
     def setMap(self, map_entity):
         self.map = map_entity
    
-
     def BFS(self):
         print("algorithm started")
         tile_map = self.tile_map
@@ -130,7 +138,7 @@ class GameScreen:
                 print("algorithm complete")
                 
                 for x, z in path:
-                    draw.point((world_size - x - 1, z), fill=(0, 0, 255, 255))
+                    draw.point((self.settings.get_world_size() - x - 1, z), fill=(0, 0, 255, 255))
                 self.image.save("minimapAlgorithmPathBFS.png")
 
                 return path  # List of tuples from start to goal
@@ -143,7 +151,7 @@ class GameScreen:
                         queue.append(neighbor)
                         visited.add(neighbor)
                         parent[neighbor] = current
-                        draw.point((world_size - neighbor[0] - 1, neighbor[1]), fill=(128, 0, 128, 255))
+                        draw.point((self.settings.get_world_size() - neighbor[0] - 1, neighbor[1]), fill=(128, 0, 128, 255))
         print("No path found")
         return None  # No path found
 
@@ -205,7 +213,7 @@ class GameScreen:
                 print("DFS algorithm complete")
                 
                 for x, z in path:
-                    draw.point((world_size - x - 1, z), fill=(0, 0, 255, 255))
+                    draw.point((self.settings.get_world_size() - x - 1, z), fill=(0, 0, 255, 255))
                 self.image.save("minimapAlgorithmPathDFS.png")
                 print("DFS algorithm complete")
                 return path  # List of tuples from start to goal
@@ -217,12 +225,11 @@ class GameScreen:
                         stack.append(neighbor)
                         visited.add(neighbor)
                         #fill will be purple
-                        draw.point((world_size - neighbor[0] - 1, neighbor[1]), fill=(128, 0, 128, 255))
+                        draw.point((self.settings.get_world_size() - neighbor[0] - 1, neighbor[1]), fill=(128, 0, 128, 255))
                         parent[neighbor] = current
                         
         return None  # No path found
             
-
 # Block class
 class Block(Entity):
     def __init__(self, position=(0, 0, 0), scale=(1, 1, 1), block_type="grass", **kwargs):
@@ -253,24 +260,14 @@ class Block(Entity):
         )
         self.block_type = block_type
 
-
-mini_block = Entity(
-  parent=camera,
-  model="minecraft_starter/assets/models/Torch",
-  texture=block_textures.get("torch"),
-  scale= 0.2,
-  position=(0.35, -0.25, 0.5),
-  rotation=(-15, -30, -5)
-)
-
 # Draw the texture for the MiniMap
-def draw_minimap(image, tile_map, colorMap):
+def draw_minimap(image, tile_map, colorMap, settings):
     
     colorChar = ''
     draw = ImageDraw.Draw(image)
-    for x in range(world_size):
+    for x in range(settings.get_world_size()):
         row = []
-        for z in range(world_size):
+        for z in range(settings.get_world_size()):
             if tile_map[x][z] == "O":
                 color = (255, 0, 0, 255)  # Red
                 colorChar = 'R'
@@ -284,7 +281,7 @@ def draw_minimap(image, tile_map, colorMap):
                 color = (0, 255, 0, 255)  # Green
                 colorChar = 'G'
             #draw.point((world_size - x - 1, world_size - z - 1), fill=color)
-            draw.point((world_size - x - 1, z), fill=color)
+            draw.point((settings.get_world_size() - x - 1, z), fill=color)
             row.append(colorChar)
         colorMap.append(row)
     #image = image.transpose(Image.ROTATE_90)
@@ -293,24 +290,24 @@ def draw_minimap(image, tile_map, colorMap):
     print("MiniMap Created")
 
 # Generate Home Structure
-def homeGeneration():
+def homeGeneration(self):
     home_tile_positions = []
-    x = random.randint(home_min_z, home_max_z)
-    z = random.randint(0, world_size - home_size - 10)
-    for dx in range(home_size):
-        for dz in range(home_size):
+    x = random.randint(self.settings.get_home_min_z(), self.settings.get_home_max_z())
+    z = random.randint(0, self.settings.get_world_size() - self.settings.get_home_size() - 10)
+    for dx in range(self.settings.get_home_size()):
+        for dz in range(self.settings.get_home_size()):
             home_tile_positions.append((x + dx, z + dz))
     return home_tile_positions
 
 # Generate Cluster Obstacles
-def clusterGeneration(home_tile_positions, obstacle_positions, cluster_locations):
+def clusterGeneration(home_tile_positions, obstacle_positions, cluster_locations, settings):
     # Place 3x3 clusters of obstacles
-    for i in range(num_clusters):
+    for i in range(settings.get_num_clusters()):
         placed = False
         while not placed:
             # Declaring the cluster position to be inside of the world and not outside of it
-            x = random.randint(0, world_size - 3) # x pos
-            z = random.randint(0, world_size - 3) # z pos
+            x = random.randint(0, settings.get_world_size() - 3) # x pos
+            z = random.randint(0, settings.get_world_size() - 3) # z pos
             obstacleType = random.randint(1, 3) # Randomly select the obstacle type
             
             # create a vector<pair<int, int>> equivalent to mark the cluster obstacle positions
@@ -333,12 +330,12 @@ def clusterGeneration(home_tile_positions, obstacle_positions, cluster_locations
                 placed = True
 
 # Generate Single Obstacles
-def singlesGeneration(obstacle_positions, home_tile_positions, single_locations):
+def singlesGeneration(obstacle_positions, home_tile_positions, single_locations, settings):
     # Place single tile obstacles
-    while len(obstacle_positions) < total_obstacles: # Remaining obstacles will be single tiled
+    while len(obstacle_positions) < settings.get_total_obstacles(): # Remaining obstacles will be single tiled
         # Declare world bounds for the obstacles
-        x = random.randint(0, world_size - 1)
-        z = random.randint(0, world_size - 1)
+        x = random.randint(0, settings.get_world_size() - 1)
+        z = random.randint(0, settings.get_world_size() - 1)
         obstacleType = random.randint(1, 5) # Randomly select the obstacle type
         
         # If the position is not already taken by an obstacle, add it to the obstacle set
@@ -347,15 +344,15 @@ def singlesGeneration(obstacle_positions, home_tile_positions, single_locations)
             single_locations.append(((x, z), obstacleType))
 
 # Generate the Map
-def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions):
+def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions, settings):
         # Initialize the tile map
-    for x in range(world_size):
+    for x in range(settings.get_world_size()):
         row = [] #declare a row to store the tile status (Free Space or Obstacle) (True or False)
-        for z in range(world_size):
+        for z in range(settings.get_world_size()):
             position = (x, -5, z)
             is_free_space = (x, z) not in obstacle_positions
             block_positions[position] = is_free_space
-            if x == player_spawn_x and z == player_spawn_z:
+            if x == settings.get_player_spawn_x() and z == settings.get_player_spawn_z():
                 row.append("P") # P for Player
             elif is_free_space:
                 row.append("F") # F for Free Space
