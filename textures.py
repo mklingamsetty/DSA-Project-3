@@ -15,6 +15,8 @@ block_textures = {
     "darkstone" : load_texture("minecraft_starter/assets/textures/stone02.png"),
     "mud" : load_texture("minecraft_starter/assets/textures/groundMud.png"),
     "trimmedGrass" : load_texture("minecraft_starter/assets/textures/stone06.png"),
+    "redstone" : load_texture("minecraft_starter/assets/textures/stone08.png"), #Bfs
+    "bluestone" : load_texture("minecraft_starter/assets/textures/stone09.png"), #Dfs
     # Add other block textures if needed
 }
 

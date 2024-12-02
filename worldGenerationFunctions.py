@@ -361,3 +361,12 @@ def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positio
             else:
                 row.append("O") # O for Obstacle
         tile_map.append(row)
+
+def colorMap(algorithm, colorMap, path):
+    if algorithm == "BFS":
+        color = (0, 0, 255, 255) # Blue
+    elif algorithm == "DFS":
+        color = (0, 255, 0, 255) # Green
+    for x, z in path:
+        colorMap[x][z] = color
+    return colorMap
