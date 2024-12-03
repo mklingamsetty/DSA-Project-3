@@ -54,7 +54,7 @@ class Game:
             self.last_save_time = current_time
             #game_screen.image = game_screen.image.transpose(Image.FLIP_LEFT_RIGHT)
             #game_screen.image = game_screen.image.transpose(Image.ROTATE_90)
-            self.game_screen.image.save("minimap.png")
+            # self.game_screen.image.save("minimap.png")
 
     def update_visible_blocks(self):
         # Update the visible blocks based on the player's position
@@ -71,11 +71,11 @@ class Game:
                 obstacle_position = (x, -4, z) # Position of the obstacles that are visible to us at the moment
                 if position in self.game_screen.block_positions and position not in self.visible_blocks:
                     # Use the appropriate texture based on whether it's an obstacle
+                    if self.game_screen.block_positions[position]:
+                        block_type = "grass" # Default block type
+                        self.visible_blocks[position] = Block(position=position, block_type=block_type)
                     if self.path is not None and (x, z) in self.path:
                         block_type = "snow"
-                        self.visible_blocks[position] = Block(position=position, block_type=block_type)
-                    elif self.game_screen.block_positions[position]: 
-                        block_type = "grass" # Default block type
                         self.visible_blocks[position] = Block(position=position, block_type=block_type)
                         #self.visible_blocks[obstacle_position] = Zombie(position=obstacle_position, scale = 0.1)
                         #zombie = Entity(model=mob_models.get("zombie"), texture = mob_textures.get("zombie"), scale=0.07, double_sided=True, y = -4, x = x, z = z)
@@ -201,7 +201,6 @@ app = Ursina()
 window.exit_button.visible = True # Show the Red X window close button
 
 # Loading textures and worldGen must occur after app in initialized
-from textures import *
 from worldGenerationFunctions import *
 from worldSettings import *
 
@@ -229,9 +228,10 @@ def input(key):
                 parent=camera.ui,
                 model='quad',
                 position=(-0.4, 0),
-                scale=(0.9, 0.9)
+                scale=(0.9, 0.9),
+                texture = "minimap.png"
             )
-            map.texture = "minimap.png"
+
             text_entity = Text(
                 text="Please Choose an Algorithm: \n Press 'B' for BFS \n Press 'D' for DFS",
                 position=(0.1, 0),
@@ -241,17 +241,22 @@ def input(key):
             )
     elif key == 'b' and mPressed:
         print("BFS Algorithm")
+        map.texture = "minimap.png"  # Reset the minimap texture
+        game.path = None  # Reset the path
         game.path = game.game_screen.BFS()  # Compute the path
         update_blocks_on_path(game, game.path, "snow")  # Place redstone blocks
-        game.map.texture = "minimapAlgorithmPathBFS.png"  # Update the minimap texture
+        map.texture = "minimapAlgorithmPathBFS.png"  # Update the minimap texture
 
     elif key == 'd' and mPressed:
         print("DFS Algorithm")
+        map.texture = "minimap.png"  # Reset the minimap texture
+        game.path = None  # Reset the path
         game.path = game.game_screen.DFS()  # Compute the path
         update_blocks_on_path(game, game.path, "snow")  # Place bluestone blocks
-        game.map.texture = "minimapAlgorithmPathDFS.png"  # Update the minimap texture
+        map.texture = "minimapAlgorithmPathDFS.png"  # Update the minimap texture
 
     elif key == 'r':
+        map.texture = "minimap.png"  # Reset the minimap texture
         if rectangle_entity:
             destroy(rectangle_entity)
             destroy(map)

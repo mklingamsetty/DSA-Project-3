@@ -1,7 +1,6 @@
 from ursina import *
 import random
 from worldSettings import *
-from textures import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from PIL import Image, ImageDraw
 from collections import deque
@@ -64,12 +63,11 @@ class GameScreen:
         self.MiniMap.texture = "minimap.png"
         self.draw = ImageDraw.Draw(self.image)
         self.map = None
-        self.texture_counter = 0
 
         self.mini_block = Entity(
             parent=camera,
             model="minecraft_starter/assets/models/Torch",
-            texture=block_textures.get("torch"),
+            texture=self.settings.block_textures.get("torch"),
             scale= 0.2,
             position=(0.35, -0.25, 0.5),
             rotation=(-15, -30, -5)
@@ -82,8 +80,11 @@ class GameScreen:
     def BFS(self):
         print("algorithm started")
         tile_map = self.tile_map
-        image = self.image
-        draw = self.draw
+        self.bfsMap = Image.new('RGB', (self.settings.get_world_size(), self.settings.get_world_size()), color=(0, 0, 0, 0))
+        self.colorMap = []
+        draw_minimap(self.bfsMap, self.tile_map, self.colorMap, self.settings)
+        self.drawBFS = ImageDraw.Draw(self.bfsMap)
+        draw = self.drawBFS
         # Breadth First Search Algorithm
         # This algorithm will find the shortest path between the player and the home
         # The algorithm will return a list of coordinates (x, z) that represent the path from the player to the home
@@ -125,7 +126,7 @@ class GameScreen:
             print(f"Current: {current}")
             if current in goal:
                 # Reconstruct the path
-                self.image.save("minimapAlgorithmVisitedBFS.png")
+                self.bfsMap.save("minimapAlgorithmVisitedBFS.png")
 
                 path = []
                 while current != start:
@@ -139,7 +140,7 @@ class GameScreen:
                 
                 for x, z in path:
                     draw.point((self.settings.get_world_size() - x - 1, z), fill=(0, 0, 255, 255))
-                self.image.save("minimapAlgorithmPathBFS.png")
+                self.bfsMap.save("minimapAlgorithmPathBFS.png")
 
                 return path  # List of tuples from start to goal
 
@@ -233,21 +234,22 @@ class GameScreen:
 # Block class
 class Block(Entity):
     def __init__(self, position=(0, 0, 0), scale=(1, 1, 1), block_type="grass", **kwargs):
+        self.settings = worldSettings()
         if block_type == "zombie":
             model = "minecraft_starter/assets/models/AnyConv.com__zombie.obj"
-            texture = mob_textures.get("zombie")
+            texture = self.settings.mob_textures.get("zombie")
         elif block_type == "enderman":
             model = "minecraft_starter/assets/models/AnyConv.com__enderman.obj"
-            texture = mob_textures.get("enderman")
+            texture = self.settings.mob_textures.get("enderman")
         elif block_type == "creeper":
             model = "minecraft_starter/assets/models/AnyConv.com__creeper.obj"
-            texture = mob_textures.get("creeper")
+            texture = self.settings.mob_textures.get("creeper")
         elif block_type == "skeleton":
             model = "minecraft_starter/assets/models/AnyConv.com__skeleton.obj"
-            texture = mob_textures.get("skeleton")
+            texture = self.settings.mob_textures.get("skeleton")
         else:
             model = "minecraft_starter/assets/models/block_model"
-            texture = block_textures.get(block_type)
+            texture = self.settings.block_textures.get(block_type)
 
         super().__init__(
             position=position,
@@ -377,7 +379,7 @@ def update_blocks_on_path(game, path, block_type):
                 if block:
                     # Update existing block to the new type
                     block.block_type = block_type
-                    block.texture = block_textures.get(block_type)
+                    block.texture = game.settings.block_textures.get(block_type)
                 else:
                     # Add new block for the path
                     game.visible_blocks[world_position] = Block(

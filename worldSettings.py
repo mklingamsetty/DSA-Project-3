@@ -1,3 +1,5 @@
+from ursina import *
+
 ########################################################### GLOBAL VARIABLES ##################################################
 ###############################################################################################################################
 # World settings
@@ -16,7 +18,6 @@ class worldSettings:
         self.home_min_z = self.world_size - 80                                      # Home min z position
         self.home_max_z = self.world_size - 50     
         
-        from ursina import *
         
         # Load block textures
         self.block_textures = {
