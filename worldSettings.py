@@ -3,7 +3,7 @@
 # World settings
 class worldSettings:
     def __init__(self):
-        self.world_size = 317                                                       # This creates a world with world_size x world_size amount of blocks (min must be 317)
+        self.world_size = 317                                                      # This creates a world with world_size x world_size amount of blocks (min must be 317)
         self.render_distance = 8                                                    # reduce this value if you have a slow computer
         self.total_tiles = self.world_size * self.world_size                        # Compute total number of tiles
         self.total_obstacles = int(0.15 * self.total_tiles)                         # Compute total number of obstacles (10% of total tiles)

@@ -71,7 +71,10 @@ class Game:
                 obstacle_position = (x, -4, z) # Position of the obstacles that are visible to us at the moment
                 if position in self.game_screen.block_positions and position not in self.visible_blocks:
                     # Use the appropriate texture based on whether it's an obstacle
-                    if self.game_screen.block_positions[position]: 
+                    if self.path is not None and (x, z) in self.path:
+                        block_type = "snow"
+                        self.visible_blocks[position] = Block(position=position, block_type=block_type)
+                    elif self.game_screen.block_positions[position]: 
                         block_type = "grass" # Default block type
                         self.visible_blocks[position] = Block(position=position, block_type=block_type)
                         #self.visible_blocks[obstacle_position] = Zombie(position=obstacle_position, scale = 0.1)
@@ -209,7 +212,6 @@ def input(key):
     map = game.get_map()
     mPressed = game.get_mPressed()
     global text_entity
-    path = game.path
 
     if key == 'q':
         application.quit()
@@ -239,16 +241,14 @@ def input(key):
             )
     elif key == 'b' and mPressed:
         print("BFS Algorithm")
-        path = game.game_screen.BFS()  # Compute the path
-        if path:
-            update_blocks_on_path(game, path, "redstone")  # Place redstone blocks
+        game.path = game.game_screen.BFS()  # Compute the path
+        update_blocks_on_path(game, game.path, "snow")  # Place redstone blocks
         game.map.texture = "minimapAlgorithmPathBFS.png"  # Update the minimap texture
 
     elif key == 'd' and mPressed:
         print("DFS Algorithm")
-        path = game.game_screen.DFS()  # Compute the path
-        if path:
-            update_blocks_on_path(game, path, "bluestone")  # Place bluestone blocks
+        game.path = game.game_screen.DFS()  # Compute the path
+        update_blocks_on_path(game, game.path, "snow")  # Place bluestone blocks
         game.map.texture = "minimapAlgorithmPathDFS.png"  # Update the minimap texture
 
     elif key == 'r':
