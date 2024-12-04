@@ -4,10 +4,9 @@ from worldSettings import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from PIL import Image, ImageDraw
 from collections import deque
+import heapq
 from ursina.prefabs.health_bar import HealthBar
 
-#class Player:
-    
 class GameScreen:
     def __init__(self):
         self.settings = worldSettings()
@@ -20,9 +19,10 @@ class GameScreen:
         
         # 2D map of obstacle positions and free spaces
         self.tile_map = []
+        self.tile_coordinates = []
         
         # Generate the Home
-        self.home_tile_positions = homeGeneration(self)
+        self.home_tile_positions = homeGeneration(self.settings)
         
         # Sets and lists to store unique obstacle positions
         self.obstacle_positions = set()
@@ -36,7 +36,9 @@ class GameScreen:
         singlesGeneration(self.obstacle_positions, self.home_tile_positions, self.single_locations, self.settings)
           
         # Generate the map
-        generateMap(self.tile_map, self.block_positions, self.obstacle_positions, self.home_tile_positions, self.settings)
+        generateMap(self.tile_map, self.tile_coordinates, self.block_positions, self.obstacle_positions, self.home_tile_positions, self.settings)
+        
+        self.dijkstraDictionary = calculateDijkstraDictionary(self.settings, self.tile_map, self.tile_coordinates, self.single_locations, self.cluster_locations)
 
         while (self.player_spawn_x, self.player_spawn_z) in self.obstacle_positions:
             self.player_spawn_x += 1  # Adjust as necessary
@@ -49,9 +51,7 @@ class GameScreen:
         )
 
         self.current_position = (int(self.player_spawn_x), int(self.player_spawn_z))
-
-        #healthBar()
-
+        
         self.MiniMap = Entity(
             parent=camera.ui,
             model='quad',
@@ -77,7 +77,6 @@ class GameScreen:
             position=(0.35, -0.25, 0.5),
             rotation=(-15, -30, -5)
         )
-
 
     def setMap(self, map_entity):
         self.map = map_entity
@@ -237,37 +236,15 @@ class GameScreen:
         return None  # No path found
     
     def dijkstra(self):
-        obstacle_cluster_types = ["stone", "lava", "water"] # Cluster obstacle types
-        obstacle_single_types = ["wood", "bedrock", "mud", "darkstone", "trimmedGrass"] # Single obstacle types
+        print("algorithm started")
         tile_map = self.tile_map
         rows = len(tile_map)
         cols = len(tile_map[0])
-        # Dijkstra's calculation weights
-        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
-        self.dijkstraDictionary = {}
-        for x in self.settings.get_world_size():
-            for z in self.settings.get_world_size():
-                list = []
-                for (dx, dz) in directions:
-                    if x + dx >= 0 and x + dx <= self.settings.get_world_size() and z + dz >= 0 and z + dz <= worldSettings.get_world_size():
-                        for single_position, obstacleType in self.single_locations:
-                            if (x, z) == single_position:
-                                block_type = obstacle_single_types[obstacleType - 1]
-                                if block_type == "wood":
-                                    list.append(((x + dx, z + dz), 2))
-                                else:
-                                    list.append(((x + dx, z + dz), 5))
-                        for cluster_position, obstacleType in self.cluster_locations:
-                            if (x, z) == cluster_position:
-                                block_type = obstacle_cluster_types[obstacleType - 1]
-                                if block_type == "stone":
-                                    list.append(((x + dx, z + dz), 3))
-                                elif block_type == "water":
-                                    list.append(((x + dx, z + dz), 4))
-                                elif block_type == "lava":
-                                    list.append(((x + dx, z + dz), 6))
-                        list.append(((x + dx, z + dz), random.randint(1, 10)))
-                self.dijkstraDictionary[(x, z)] = list
+        self.dijkstraMap = Image.new('RGB', (self.settings.get_world_size(), self.settings.get_world_size()), color=(0, 0, 0, 0))
+        self.colorMap = []
+        draw_minimap(self.dijkstraMap, self.tile_map, self.colorMap, self.settings)
+        self.drawDijkstra = ImageDraw.Draw(self.dijkstraMap)
+        draw = self.drawDijkstra
 
         start = None
         goal = []
@@ -277,12 +254,9 @@ class GameScreen:
                     start = (i, j)
                 elif tile_map[i][j] == 'H':  # 'H' represents the home
                     goal.append((i, j))
-
-        if start is None or goal is None:
-            return None  # Player or home not found
-
-        if start in goal:
-            return None  # Player is already at home
+                    break
+        print(f"Start: {start}")
+        print(f"Goal: {goal}")
 
         # Priority queue to store (distance, node)
         queue = [(0, start)]
@@ -290,44 +264,34 @@ class GameScreen:
         distances = {start: 0}
         # Dictionary to store the path
         predecessors = {start: None}
-
-        print("algorithm started")
-        tile_map = self.tile_map
-        self.dijkstraMap = Image.new('RGB', (self.settings.get_world_size(), self.settings.get_world_size()), color=(0, 0, 0, 0))
-        self.colorMap = []
-        draw_minimap(self.dijkstraMap, self.tile_map, self.colorMap, self.settings)
-        self.drawDijkstra = ImageDraw.Draw(self.dijkstraMap)
-        draw = self.drawDijkstra
-
+        nearestNode = None
         while queue:
             current_distance, current_node = heapq.heappop(queue)
-
             if current_node in goal:
+                nearestNode = current_node
                 break
 
             for neighbor, weight in self.dijkstraDictionary.get(current_node, []):
+                print(neighbor)
                 distance = current_distance + weight
 
                 if neighbor not in distances or distance < distances[neighbor]:
+                    print("current_distance: " + str(current_distance) + " current_node: " + str(current_node))
+                    draw.point((self.settings.get_world_size() - neighbor[0] - 1, neighbor[1]), fill=(128, 0, 128, 255))
                     distances[neighbor] = distance
                     predecessors[neighbor] = current_node
                     heapq.heappush(queue, (distance, neighbor))
-
         self.dijkstraMap.save("minimapAlgorithmVisitedDijkstra.png")
-
         # Reconstruct the shortest path
         path = []
-        node = goal
+        node = nearestNode
         while node is not None:
             path.append(node)
             node = predecessors[node]
-        path.reverse()
-
-        for (x, z) in path:
-            draw.point((self.settings.get_world_size() - x - 1, z), fill=(0, 0, 255, 255))
+            if node is not None:
+                draw.point((self.settings.get_world_size() - node[0] - 1, node[1]), fill=(0, 0, 255, 255))
         self.dijkstraMap.save("minimapAlgorithmPathDijkstra.png")
-        return path
-
+        path.reverse()
 # Block class
 class Block(Entity):
     def __init__(self, position=(0, 0, 0), scale=(1, 1, 1), block_type="grass", **kwargs):
@@ -359,6 +323,47 @@ class Block(Entity):
         )
         self.block_type = block_type
 
+def calculateDijkstraDictionary(settings, tile_map, tile_coordinates, single_locations, cluster_locations):
+    obstacle_cluster_types = ["stone", "lava", "water"]  # Cluster obstacle types
+    obstacle_single_types = ["wood", "bedrock", "mud", "darkstone", "trimmedGrass"]  # Single obstacle types
+
+    directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+    dijkstraDictionary = {}
+
+    single_locations_dict = {tuple(pos): obstacleType for pos, obstacleType in single_locations}
+    cluster_locations_dict = {tuple(pos): obstacleType for pos, obstacleType in cluster_locations}
+
+    world_size = settings.get_world_size()
+
+    for row in tile_coordinates:
+        for (x, z) in row:
+            list = []
+            if tile_map[x][z] != "O":
+                for (dx, dz) in directions:
+                    new_x, new_z = x + dx, z + dz
+                    if 0 <= new_x <= world_size and 0 <= new_z <= world_size:
+                        if (new_x, new_z) in single_locations_dict:
+                            obstacleType = single_locations_dict[(new_x, new_z)]
+                            block_type = obstacle_single_types[obstacleType - 1]
+                            if block_type == "wood":
+                                list.append(((new_x, new_z), 2))
+                            else:
+                                list.append(((new_x, new_z), 5))
+                        elif (new_x, new_z) in cluster_locations_dict:
+                            obstacleType = cluster_locations_dict[(new_x, new_z)]
+                            block_type = obstacle_cluster_types[obstacleType - 1]
+                            if block_type == "stone":
+                                list.append(((new_x, new_z), 3))
+                            elif block_type == "water":
+                                list.append(((new_x, new_z), 4))
+                            elif block_type == "lava":
+                                list.append(((new_x, new_z), 6))
+                        else:
+                            list.append(((new_x, new_z), 1))
+                dijkstraDictionary[(x, z)] = list
+
+    return dijkstraDictionary
+
 # Draw the texture for the MiniMap
 def draw_minimap(image, tile_map, colorMap, settings):
     
@@ -389,12 +394,12 @@ def draw_minimap(image, tile_map, colorMap, settings):
     print("MiniMap Created")
 
 # Generate Home Structure
-def homeGeneration(self):
+def homeGeneration(settings):
     home_tile_positions = []
-    x = random.randint(self.settings.get_home_min_z(), self.settings.get_home_max_z())
-    z = random.randint(0, self.settings.get_world_size() - self.settings.get_home_size() - 10)
-    for dx in range(self.settings.get_home_size()):
-        for dz in range(self.settings.get_home_size()):
+    x = random.randint(settings.get_home_min_z(), settings.get_home_max_z())
+    z = random.randint(0, settings.get_world_size() - settings.get_home_size() - 10)
+    for dx in range(settings.get_home_size()):
+        for dz in range(settings.get_home_size()):
             home_tile_positions.append((x + dx, z + dz))
     return home_tile_positions
 
@@ -443,10 +448,11 @@ def singlesGeneration(obstacle_positions, home_tile_positions, single_locations,
             single_locations.append(((x, z), obstacleType))
 
 # Generate the Map
-def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positions, settings):
+def generateMap(tile_map, tile_coordinates, block_positions, obstacle_positions, home_tile_positions, settings):
         # Initialize the tile map
     for x in range(settings.get_world_size()):
         row = [] #declare a row to store the tile status (Free Space or Obstacle) (True or False)
+        list = []
         for z in range(settings.get_world_size()):
             position = (x, -5, z)
             is_free_space = (x, z) not in obstacle_positions
@@ -459,10 +465,15 @@ def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positio
                 row.append("H") # H for Home
             else:
                 row.append("O") # O for Obstacle
+            list.append((x, z))
+        tile_coordinates.append(list)
         tile_map.append(row)
 
 def update_blocks_on_path(game, path, block_type):
     world_size = game.game_screen.settings.get_world_size()
+    if path is None:
+        return
+
     for x, z in path:
         # Ensure coordinates are within world bounds
         if 0 <= x < world_size and 0 <= z < world_size:
@@ -481,14 +492,5 @@ def update_blocks_on_path(game, path, block_type):
             # Persist in block_positions to ensure it isn't culled by render logic
             game.game_screen.block_positions[world_position] = False
 
-#Health bar function
-def healthBar():
-    health_bar = HealthBar(
-                value=100, 
-                position=(-0.8, 0.4), 
-                bar_color=color.blue, 
-                bar_texture="minecraft_starter/assets/textures/healthBar.png",
-                roundness=0.7, 
-                scale=(0.4, 0.05)
-            )
-    return health_bar
+
+
