@@ -1,4 +1,5 @@
 from ursina import *
+from ursina.prefabs.health_bar import HealthBar
 from PIL import Image, ImageDraw
 import random
 import time
@@ -225,6 +226,7 @@ class Game:
 
 # Initialize the app
 app = Ursina()
+HB = HealthBar(value=100, position=(-0.8, 0.4), bar_color=color.red, bar_texture="minecraft_starter/assets/textures/healthBar.png", scale=(0.5, 0.1))
 window.exit_button.visible = True # Show the Red X window close button
 
 # Loading textures and worldGen must occur after app in initialized
