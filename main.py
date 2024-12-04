@@ -14,13 +14,16 @@ class Game:
         self.save_interval = 2
 
         self.game_screen = GameScreen()
-
+        self.default_speed = self.game_screen.player_speed
+        self.current_block_type = None
         self.draw = ImageDraw.Draw(self.game_screen.image)
 
         self.rectangle_entity = None
         self.map = Entity()
         self.mPressed = False
-        self.health_bar = self.create_health_bar()
+        self.health_bar = HealthBar(bar_color=color.green.tint(-.25), roundness=.5, scale=(0.5,.06))
+        self.last_damage_time = time.time()
+        self.damage_interval = 1
         self.index = 0
         self.pathBFS = None
         self.pathDFS = None
@@ -36,24 +39,26 @@ class Game:
         self.backWall = Entity(model="cube", scale=(self.settings.get_world_size() + 1, self.settings.get_world_size(), 1), position=(self.settings.get_world_size() / 2, 0, -1), collider="box", visible=False)
 
         Sky(texture="minecraft_starter/assets/textures/nightSky.png")
-    def create_health_bar(self):
-        return HealthBar(
-                value=100, 
-                position=(-0.8, 0.4), 
-                bar_color=color.blue, 
-                bar_texture="minecraft_starter/assets/textures/healthBar.png",
-                roundness=0.7, 
-                scale=(0.4, 0.05)
-            )    
 
-    def toggle_health_bar(self, visible = True):
+    def toggle_health_bar(self, visible = True, value = 100):
         if visible == True:
             if not self.health_bar:
-                self.health_bar = self.create_health_bar()
+                self.health_bar = HealthBar(value=value, bar_color=color.green.tint(-.25), roundness=.5, scale=(0.5,.06))
         else:
             if self.health_bar:
+                value = self.health_bar.value
                 destroy(self.health_bar)
                 self.health_bar = None
+
+    def damage(self, power):
+        self.health_bar.value -= power
+        if (self.health_bar.value <= 50):
+            self.health_bar.bar_color = color.yellow.tint(-.25)
+        if (self.health_bar.value <= 25):
+            self.health_bar.bar_color = color.red.tint(-.25)
+        if (self.health_bar.value <= 0):
+            print("Player has Died")
+            application.quit()
 
     def update(self):       
         #Every frame, update the visible blocks
@@ -64,6 +69,7 @@ class Game:
         # Define your world size
         player_x = int(self.game_screen.player.x)
         player_z = int(self.game_screen.player.z)
+        player_position = (player_x, -5, player_z)
         mirrored_x = self.settings.get_world_size() - player_x - 1
         new_position = (mirrored_x, player_z)
 
@@ -72,6 +78,24 @@ class Game:
             self.draw.point(new_position, fill=(255, 192, 203, 255))
             self.draw.point(self.game_screen.current_position, fill=(0, 255, 0, 255))
         current_time = time.time()
+        if player_position in self.visible_blocks:
+            block = self.visible_blocks[player_position]
+            if block.block_type != self.current_block_type:
+                self.current_block_type = block.block_type
+                self.game_screen.player_speed = self.default_speed
+            if (block.block_type == "bedrock" or block.block_type == "mud" or block.block_type == "darkstone" or block.block_type == "trimmedGrass") and current_time - self.last_damage_time >= self.damage_interval:
+                self.damage(5)
+                self.last_damage_time = current_time
+            if block.block_type == "lava" and current_time - self.last_damage_time >= self.damage_interval:
+                self.game_screen.player_speed /= 2
+                self.damage(5)
+                self.last_damage_time = current_time
+            elif block.block_type == "water":
+                self.game_screen.player_speed /= 2
+        else:
+            if self.current_block_type is not None:
+                self.current_block_type = None
+                self.game_screen.player_speed = self.default_speed
         self.game_screen.current_position = new_position
         if current_time - self.last_save_time >= self.save_interval:
             self.last_save_time = current_time
