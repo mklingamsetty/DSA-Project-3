@@ -84,16 +84,16 @@ class Game:
             block = self.visible_blocks[player_position]
             if block.block_type != self.current_block_type:
                 self.current_block_type = block.block_type
-                self.game_screen.player_speed = self.default_speed
+                self.game_screen.player.speed = self.default_speed
             if (block.block_type == "bedrock" or block.block_type == "mud" or block.block_type == "darkstone" or block.block_type == "trimmedGrass") and current_time - self.last_damage_time >= self.damage_interval:
                 self.damage(5)
                 self.last_damage_time = current_time
             if block.block_type == "lava" and current_time - self.last_damage_time >= self.damage_interval:
-                self.game_screen.player_speed /= 2
+                self.game_screen.player.speed = self.default_speed / 4
                 self.damage(5)
                 self.last_damage_time = current_time
             elif block.block_type == "water":
-                self.game_screen.player_speed /= 2
+                self.game_screen.player.speed = self.default_speed / 4
         else:
             if self.current_block_type is not None:
                 self.current_block_type = None
