@@ -292,6 +292,7 @@ class GameScreen:
                 draw.point((self.settings.get_world_size() - node[0] - 1, node[1]), fill=(0, 0, 255, 255))
         self.dijkstraMap.save("minimapAlgorithmPathDijkstra.png")
         path.reverse()
+        return path
 # Block class
 class Block(Entity):
     def __init__(self, position=(0, 0, 0), scale=(1, 1, 1), block_type="grass", **kwargs):
@@ -491,6 +492,3 @@ def update_blocks_on_path(game, path, block_type):
                     )
             # Persist in block_positions to ensure it isn't culled by render logic
             game.game_screen.block_positions[world_position] = False
-
-
-

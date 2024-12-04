@@ -27,8 +27,10 @@ class Game:
         self.index = 0
         self.pathBFS = None
         self.pathDFS = None
+        self.pathDijkstra = None
         self.showBFS = False
         self.showDFS = False
+        self.showDijkstra = False
 
         self.settings = worldSettings()
 
@@ -137,20 +139,41 @@ class Game:
                         block_type = "bluestone" # Bluestone block type   
                         self.visible_blocks[position] = Block(position=position, block_type=block_type)
 
+                    if self.showDijkstra and (x, z) in self.pathDijkstra:
+                        block_type = "snow"
+                        self.visible_blocks[position] = Block(position=position, block_type=block_type)
+
                     if self.showBFS is False and self.pathBFS is not None:
-                        if (x, z) in self.pathDFS and (x, z) in self.pathBFS: # If the position is not an obstacle
-                            block_type = "bluestone" # Default block type
-                        elif (x, z) in self.pathBFS: # If the position is not an obstacle
-                            block_type = "grass" # Default block type
+                        if self.pathDijkstra is not None:
+                            if (x, z) in self.pathBFS:
+                                block_type = "snow"
+                        if self.pathDFS is not None:
+                            if (x, z) in self.pathDFS:
+                                block_type = "bluestone"
+                        if (x, z) in self.pathBFS:
+                            block_type = "redstone"
                             self.visible_blocks[position] = Block(position=position, block_type=block_type)
                     if self.showDFS is False and self.pathDFS is not None:
-                        if (x, z) in self.pathDFS and (x, z) in self.pathBFS: # If the position is not an obstacle
-                            block_type = "redstone" # Default block type
-                        elif (x, z) in self.pathDFS:
-                            block_type = "grass"
+                        if self.pathBFS is not None:
+                            if (x, z) in self.pathBFS:
+                                block_type = "redstone"
+                        if self.pathDijkstra is not None:
+                            if (x, z) in self.pathDijkstra:
+                                block_type = "snow"
+                        if (x, z) in self.pathDFS:
+                            block_type = "bluestone"
                             self.visible_blocks[position] = Block(position=position, block_type=block_type)
-                    
-                        
+                    if self.showDijkstra is False and self.pathDijkstra is not None:
+                        if self.pathBFS is not None:
+                            if (x, z) in self.pathBFS:
+                                block_type = "redstone"
+                        if self.pathDFS is not None:
+                            if (x, z) in self.pathDFS:
+                                block_type = "bluestone"
+                        if (x, z) in self.pathDijkstra:
+                            block_type = "snow"
+                            self.visible_blocks[position] = Block(position=position, block_type=block_type)
+                
                     # Check if the position is a home tile position
                     if (x, z) in self.game_screen.home_tile_positions:
                         block_type = "wall"
@@ -288,7 +311,7 @@ def input(key):
     elif key == 'm':
         mPressed = True
         game.toggle_health_bar(visible=False)
-        destroy(game.health_bar)
+        #destroy(game.health_bar)
         if not rectangle_entity:
             rectangle_entity = Button(
                 model='quad',
@@ -319,6 +342,7 @@ def input(key):
         update_blocks_on_path(game, game.pathBFS, "redstone")  # Place redstone blocks
         game.showBFS = True
         game.showDFS = False
+        game.showDijkstra = False
         #game.pathDFS = None  # Reset the path
         #update_blocks_on_path(game, game.pathDFS, "grass")  # Remove bluestone blocks
         map.texture = "minimapAlgorithmPathBFS.png"  # Update the minimap texture
@@ -330,15 +354,19 @@ def input(key):
         update_blocks_on_path(game, game.pathDFS, "bluestone")  # Place bluestone blocks
         game.showBFS = False
         game.showDFS = True
+        game.showDijkstra = False
         #game.pathBFS = None  # Reset the path
         #update_blocks_on_path(game, game.pathBFS, "grass") # Remove redstone blocks
         map.texture = "minimapAlgorithmPathDFS.png"  # Update the minimap texture
     elif key == 'j' and mPressed:
         print("Dijkstra's Algorithm")
         map.texture = "minimap.png"  # Reset the minimap texture
-        game.path = None  # Reset the path
-        game.path = game.game_screen.dijkstra()  # Compute the path
-        update_blocks_on_path(game, game.path, "snow")  # Place gold blocks
+        game.pathDijkstra = None  # Reset the path
+        game.pathDijkstra = game.game_screen.dijkstra()  # Compute the path
+        game.showBFS = False
+        game.showDFS = False
+        game.showDijkstra = True
+        update_blocks_on_path(game, game.pathDijkstra, "snow")  # Place gold blocks
         map.texture = "minimapAlgorithmPathDijkstra.png"  # Update the minimap texture
     elif key == 'r':
         map.texture = "minimap.png"  # Reset the minimap texture
