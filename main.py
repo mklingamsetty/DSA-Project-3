@@ -289,7 +289,13 @@ def input(key):
         #game.pathBFS = None  # Reset the path
         #update_blocks_on_path(game, game.pathBFS, "grass") # Remove redstone blocks
         map.texture = "minimapAlgorithmPathDFS.png"  # Update the minimap texture
-
+    elif key == 'j' and mPressed:
+        print("Dijkstra's Algorithm")
+        map.texture = "minimap.png"  # Reset the minimap texture
+        game.path = None  # Reset the path
+        game.path = game.game_screen.dijkstra()  # Compute the path
+        update_blocks_on_path(game, game.path, "snow")  # Place gold blocks
+        map.texture = "minimapAlgorithmPathDijkstra.png"  # Update the minimap texture
     elif key == 'r':
         map.texture = "minimap.png"  # Reset the minimap texture
         if rectangle_entity:

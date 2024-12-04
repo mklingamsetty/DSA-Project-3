@@ -230,7 +230,99 @@ class GameScreen:
                         parent[neighbor] = current
                         
         return None  # No path found
-            
+    
+    def dijkstra(self):
+        obstacle_cluster_types = ["stone", "lava", "water"] # Cluster obstacle types
+        obstacle_single_types = ["wood", "bedrock", "mud", "darkstone", "trimmedGrass"] # Single obstacle types
+        tile_map = self.tile_map
+        rows = len(tile_map)
+        cols = len(tile_map[0])
+        # Dijkstra's calculation weights
+        directions = [(0, 1), (0, -1), (1, 0), (-1, 0)]
+        self.dijkstraDictionary = {}
+        for x in self.settings.get_world_size():
+            for z in self.settings.get_world_size():
+                list = []
+                for (dx, dz) in directions:
+                    if x + dx >= 0 and x + dx <= self.settings.get_world_size() and z + dz >= 0 and z + dz <= worldSettings.get_world_size():
+                        for single_position, obstacleType in self.single_locations:
+                            if (x, z) == single_position:
+                                block_type = obstacle_single_types[obstacleType - 1]
+                                if block_type == "wood":
+                                    list.append(((x + dx, z + dz), 2))
+                                else:
+                                    list.append(((x + dx, z + dz), 5))
+                        for cluster_position, obstacleType in self.cluster_locations:
+                            if (x, z) == cluster_position:
+                                block_type = obstacle_cluster_types[obstacleType - 1]
+                                if block_type == "stone":
+                                    list.append(((x + dx, z + dz), 3))
+                                elif block_type == "water":
+                                    list.append(((x + dx, z + dz), 4))
+                                elif block_type == "lava":
+                                    list.append(((x + dx, z + dz), 6))
+                        list.append(((x + dx, z + dz), random.randint(1, 10)))
+                self.dijkstraDictionary[(x, z)] = list
+
+        start = None
+        goal = []
+        for i in range(rows):
+            for j in range(cols):
+                if tile_map[i][j] == 'P':  # 'P' represents the player
+                    start = (i, j)
+                elif tile_map[i][j] == 'H':  # 'H' represents the home
+                    goal.append((i, j))
+
+        if start is None or goal is None:
+            return None  # Player or home not found
+
+        if start in goal:
+            return None  # Player is already at home
+
+        # Priority queue to store (distance, node)
+        queue = [(0, start)]
+        # Dictionary to store the shortest distance to each node
+        distances = {start: 0}
+        # Dictionary to store the path
+        predecessors = {start: None}
+
+        print("algorithm started")
+        tile_map = self.tile_map
+        self.dijkstraMap = Image.new('RGB', (self.settings.get_world_size(), self.settings.get_world_size()), color=(0, 0, 0, 0))
+        self.colorMap = []
+        draw_minimap(self.dijkstraMap, self.tile_map, self.colorMap, self.settings)
+        self.drawDijkstra = ImageDraw.Draw(self.dijkstraMap)
+        draw = self.drawDijkstra
+
+        while queue:
+            current_distance, current_node = heapq.heappop(queue)
+
+            if current_node in goal:
+                break
+
+            for neighbor, weight in self.dijkstraDictionary.get(current_node, []):
+                distance = current_distance + weight
+
+                if neighbor not in distances or distance < distances[neighbor]:
+                    distances[neighbor] = distance
+                    predecessors[neighbor] = current_node
+                    heapq.heappush(queue, (distance, neighbor))
+
+        self.dijkstraMap.save("minimapAlgorithmVisitedDijkstra.png")
+
+        # Reconstruct the shortest path
+        path = []
+        node = goal
+        while node is not None:
+            path.append(node)
+            node = predecessors[node]
+        path.reverse()
+
+        for (x, z) in path:
+            draw.point((self.settings.get_world_size() - x - 1, z), fill=(0, 0, 255, 255))
+        self.dijkstraMap.save("minimapAlgorithmPathDijkstra.png")
+        return path
+
 # Block class
 class Block(Entity):
     def __init__(self, position=(0, 0, 0), scale=(1, 1, 1), block_type="grass", **kwargs):
