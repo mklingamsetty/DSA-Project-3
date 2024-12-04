@@ -1,10 +1,12 @@
 Data Structures and Algorthims Fall 2024 
 
 Project 3 - "I Want To Go Home!"
+Team Name: I Survived Segmentation Fault
 
 Algorithms:
     Breadth First Search (BFS)
     Depth First Search (DFS)
+    Dijkstra's Algorithm
 
 Members:
     Murali Lingamsetty
@@ -30,36 +32,18 @@ Credits/References:
    - https://sketchfab.com/3d-models/minecraft-skeleton-3ea04380d84f498a81f07043acad19f0#download
    - https://pillow.readthedocs.io/en/stable/
 
+How to Run Code:
 
-
-********** DELETE EACH TASK WHEN FINISHED **********
-    TASKS !!!!
-    - Edit our Algorithms
-        - Both Algorithms are written out still needs to be tested
-    - Player UI
-        - MiniMap
-            - WARNING : game start up will be a bit longer (like extra 5-10secs) due to generating an image
-            - I have created an Image using the Pillow Library in python to represent the world 2 Dimensional.
-              The way I did it was by making an image with a pixel count of world_size x world_size as seen in the GameScreen class.
-              There is a function called draw_minimap() which draws on the blank image pixel by pixel according to what the block is (whether a free space or obstacle or home)
-              *** TASKS FOR MINIMAP ***
-                Preliminary Fix (OPTIONAL FIX CAN BE FIXED LATER): There is a bug with displaying the home on the minimap, 
-                 it displays parts of it like smal/ clusters. Maybe a problem with how the home is generated?? Look into it plz.
-
-                1. We must now add this image as a texture to the MiniMap entity I have made in the top right of the GameScreen
-                2. Now we have to focus the image. Since everything is so small on the image (a pixel is very small) we need to 
-                   zoom in on the player's position and when the player moves, so does the map. 
-                3. When we press the 'm' key, we need to be able to show a HUD (Heads-Up-Display) (Defintion for Zhiting) which
-                   basically creates a big RECTANGLE entity in the middle of the screen, displays the minimap on the LEFT and 2 options on the RIGHT (BFS or DFS).  
-                    - We can use a key input ('B' key for BFS or 'D' key for DFS)                
-                    - We must show how the algorithms work, be shading in the pixels in the Map
-                        - similar to how the GTA project worked
-                        - (OPTIONAL) after best route is found, shade the actual blocks on the actual world to help
-    
-    - OPTIONAL (WORK ON THIS LAST)
-        - IF WE DO THIS THEN WE MIGHT NEED TO USE DJISKTRAS!!!!
-        - music (default minecraft music)
-        - block effects
-            - water -> player speed + 5
-            - lava -> player speed - 5
-        
+After installing ursina and Pillow, press the 'run' button and you should be redirected to the game window.
+You will be transported into a 3D world which takes in the user inputs 'W','S','A','D' to move forward, backward, left and right respecively.
+The space bar will allow you to jump.
+Upon pressing 'm', the minimap will maximize to display a large map as well as the interface to choose the algorithm to guide you home.
+You can choose between Breadth First Search, Depth First Search, and Dijkstra's Algorithm. After selecting your algorithm of choice, wait for the 
+algorithm to visit the nearby nodes until it reaches the 'home' waypoint, to which the map will regenerate, highlighting visited nodes in purple
+and showing the path from player location to home in blue. 
+Pressing 'r' will allow the user to return to the game, and if they look down they will notice that the algorithm they selected has been revealed to them on the ground,
+effectively guiding them to the 'home' location.
+When following the path home, the player must be careful, as there are various obstacles in their path. Trees and stones are in their way to block their path,
+and pools of water serve to slow the player down. Additionally, coming into contact with lava lakes and mobs will cause the player to take damage,
+and after falling to 0 health, the application will quit.
+Additionally, whenn the player is finished with the game, they may close the application by pressing 'q'.

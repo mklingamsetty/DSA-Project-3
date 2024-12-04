@@ -369,7 +369,7 @@ def calculateDijkstraDictionary(settings, tile_map, tile_coordinates, single_loc
 
 # Draw the texture for the MiniMap
 def draw_minimap(image, tile_map, colorMap, settings):
-    
+
     colorChar = ''
     draw = ImageDraw.Draw(image)
     for x in range(settings.get_world_size()):
