@@ -47,12 +47,12 @@ class GameScreen:
 
         self.current_position = (int(self.player_spawn_x), int(self.player_spawn_z))
         
-        self.MiniMap = Entity(
-            parent=camera.ui,
-            model='quad',
-            position=(0.6, 0.35),
-            scale=(0.3, 0.3)
-        )
+        # self.MiniMap = Entity(
+        #     parent=camera.ui,
+        #     model='quad',
+        #     position=(0.6, 0.35),
+        #     scale=(0.3, 0.3)
+        # )
         # Now starting at the bottomLeft corner of the MiniMap, we will use the tile_map 2D List to draw on the MiniMap
         # The MiniMap will be a 2D representation of the tile_map so the beginning of the tile_map will start on the 
         # bottom left, moving towards the right and once it reaches the end 
@@ -60,7 +60,7 @@ class GameScreen:
         self.image = Image.new('RGB', (self.settings.get_world_size(), self.settings.get_world_size()), color=(0, 0, 0, 0))
         self.colorMap = []
         draw_minimap(self.image, self.tile_map, self.colorMap, self.settings)
-        self.MiniMap.texture = "minimap.png"
+        #self.MiniMap.texture = "minimap.png"
         self.draw = ImageDraw.Draw(self.image)
         self.map = None
 
