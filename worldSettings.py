@@ -26,7 +26,7 @@ class worldSettings:
             "stone": load_texture("minecraft_starter/assets/textures/Stone01.png"),
             "bedrock": load_texture("minecraft_starter/assets/textures/stone07.png"),
             "lava": load_texture("minecraft_starter/assets/textures/lava01.png"),
-            "water": load_texture("minecraft_starter/assets/textures/water.png"),
+            "water": load_texture("minecraft_starter/assets/textures/water2.png"),
             "torch" : load_texture("minecraft_starter/assets/textures/Diffuse.png"),
             "obstacleTile" : load_texture("minecraft_starter/assets/textures/wallBrick05.png"),
             "wood" : load_texture("minecraft_starter/assets/textures/Wood.png"),

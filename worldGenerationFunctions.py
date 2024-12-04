@@ -46,7 +46,7 @@ class GameScreen:
         # initialize the player controller
         self.player=FirstPersonController(
         mouse_sensitivity=Vec2(100, 100), # Mouse sensitivity
-        position=(self.player_spawn_x, 7, self.player_spawn_z), # Player spawn position
+        position=(self.player_spawn_x, -5, self.player_spawn_z), # Player spawn position
         speed=self.player_speed # Player movement speed
         )
 
@@ -103,13 +103,13 @@ class GameScreen:
         cols = len(tile_map[0])
 
         # Find the player's and home's position
-        start = None
+        player_x = int(self.player.x)
+        player_z = int(self.player.z)
+        start = (player_x, player_z)
         goal = []
         for i in range(rows):
             for j in range(cols):
-                if tile_map[i][j] == 'P':  # 'P' represents the player
-                    start = (i, j)
-                elif tile_map[i][j] == 'H':  # 'H' represents the home
+                if tile_map[i][j] == 'H':  # 'H' represents the home
                     goal.append((i, j))
 
         if start is None or goal is None:
@@ -145,6 +145,7 @@ class GameScreen:
                 for x, z in path:
                     draw.point((self.settings.get_world_size() - x - 1, z), fill=(0, 0, 255, 255))
                 self.bfsMap.save("minimapAlgorithmPathBFS.png")
+                self.MiniMap.texture = "minimapAlgorithmpathBFS.png"
 
                 return path  # List of tuples from start to goal
 
@@ -179,13 +180,13 @@ class GameScreen:
         cols = len(tile_map[0])
 
         # Find the player's and home's position
-        start = None
+        player_x = int(self.player.x)
+        player_z = int(self.player.z)
+        start = (player_x, player_z)
         goal = []
         for i in range(rows):
             for j in range(cols):
-                if tile_map[i][j] == 'P':  # 'P' represents the player
-                    start = (i, j)
-                elif tile_map[i][j] == 'H':  # 'H' represents the home
+                if tile_map[i][j] == 'H':  # 'H' represents the home
                     goal.append((i, j))
 
         if start is None or goal is None:
@@ -220,6 +221,7 @@ class GameScreen:
                 for x, z in path:
                     draw.point((self.settings.get_world_size() - x - 1, z), fill=(0, 0, 255, 255))
                 self.image.save("minimapAlgorithmPathDFS.png")
+                self.MiniMap.texture = "minimapAlgorithmpathDFS.png"
                 print("DFS algorithm complete")
                 return path  # List of tuples from start to goal
 
@@ -246,13 +248,13 @@ class GameScreen:
         self.drawDijkstra = ImageDraw.Draw(self.dijkstraMap)
         draw = self.drawDijkstra
 
-        start = None
+        player_x = int(self.player.x)
+        player_z = int(self.player.z)
+        start = (player_x, player_z)
         goal = []
         for i in range(rows):
             for j in range(cols):
-                if tile_map[i][j] == 'P':  # 'P' represents the player
-                    start = (i, j)
-                elif tile_map[i][j] == 'H':  # 'H' represents the home
+                if tile_map[i][j] == 'H':  # 'H' represents the home
                     goal.append((i, j))
                     break
         print(f"Start: {start}")
@@ -282,6 +284,7 @@ class GameScreen:
                     predecessors[neighbor] = current_node
                     heapq.heappush(queue, (distance, neighbor))
         self.dijkstraMap.save("minimapAlgorithmVisitedDijkstra.png")
+        self.MiniMap.texture = "minimapAlgorithmpathDijkstra.png"
         # Reconstruct the shortest path
         path = []
         node = nearestNode
@@ -323,7 +326,6 @@ class Block(Entity):
             **kwargs  # Allow additional parameters to be passed
         )
         self.block_type = block_type
-
 def calculateDijkstraDictionary(settings, tile_map, tile_coordinates, single_locations, cluster_locations):
     obstacle_cluster_types = ["stone", "lava", "water"]  # Cluster obstacle types
     obstacle_single_types = ["wood", "bedrock", "mud", "darkstone", "trimmedGrass"]  # Single obstacle types
