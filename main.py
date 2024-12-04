@@ -20,7 +20,10 @@ class Game:
         self.map = Entity()
         self.mPressed = False
         self.index = 0
-        self.path = None
+        self.pathBFS = None
+        self.pathDFS = None
+        self.showBFS = False
+        self.showDFS = False
 
         self.settings = worldSettings()
 
@@ -64,22 +67,46 @@ class Game:
         player_x = int(self.game_screen.player.x) # Player's x position
         player_z = int(self.game_screen.player.z) # Player's z position
         render_distance = self.settings.get_render_distance()
-        
+        prevBFSPath = None
+        prevDFSPath = None
         for x in range(player_x - render_distance, player_x + render_distance): # Loop through x position +/- render_distance
             for z in range(player_z - render_distance, player_z + render_distance): # Loop through z positions +/- render_distance
                 position = (x, -5, z) # Position of the blocks that are visible to us at the moment
                 obstacle_position = (x, -4, z) # Position of the obstacles that are visible to us at the moment
                 if position in self.game_screen.block_positions and position not in self.visible_blocks:
+                    
                     # Use the appropriate texture based on whether it's an obstacle
-                    if self.game_screen.block_positions[position]:
+                    if self.game_screen.block_positions[position]: # If the position is not an obstacle
                         block_type = "grass" # Default block type
                         self.visible_blocks[position] = Block(position=position, block_type=block_type)
-                    if self.path is not None and (x, z) in self.path:
-                        block_type = "snow"
+
+                    # if self.pathBFS is None or self.pathDFS is None: 
+                    #     block_type = "grass"
+                    #     self.visible_blocks[position] = Block(position=position, block_type=block_type)   
+                    if self.showBFS and (x, z) in self.pathBFS:
+                        block_type = "redstone" # Redstone block type
                         self.visible_blocks[position] = Block(position=position, block_type=block_type)
+                        
                         #self.visible_blocks[obstacle_position] = Zombie(position=obstacle_position, scale = 0.1)
                         #zombie = Entity(model=mob_models.get("zombie"), texture = mob_textures.get("zombie"), scale=0.07, double_sided=True, y = -4, x = x, z = z)
+                    if self.showDFS and (x, z) in self.pathDFS:
+                        block_type = "bluestone" # Bluestone block type   
+                        self.visible_blocks[position] = Block(position=position, block_type=block_type)
+
+                    if self.showBFS is False and self.pathBFS is not None:
+                        if (x, z) in self.pathDFS and (x, z) in self.pathBFS: # If the position is not an obstacle
+                            block_type = "bluestone" # Default block type
+                        elif (x, z) in self.pathBFS: # If the position is not an obstacle
+                            block_type = "grass" # Default block type
+                            self.visible_blocks[position] = Block(position=position, block_type=block_type)
+                    if self.showDFS is False and self.pathDFS is not None:
+                        if (x, z) in self.pathDFS and (x, z) in self.pathBFS: # If the position is not an obstacle
+                            block_type = "redstone" # Default block type
+                        elif (x, z) in self.pathDFS:
+                            block_type = "grass"
+                            self.visible_blocks[position] = Block(position=position, block_type=block_type)
                     
+                        
                     # Check if the position is a home tile position
                     if (x, z) in self.game_screen.home_tile_positions:
                         block_type = "wall"
@@ -242,17 +269,23 @@ def input(key):
     elif key == 'b' and mPressed:
         print("BFS Algorithm")
         map.texture = "minimap.png"  # Reset the minimap texture
-        game.path = None  # Reset the path
-        game.path = game.game_screen.BFS()  # Compute the path
-        update_blocks_on_path(game, game.path, "snow")  # Place redstone blocks
+        game.pathBFS = game.game_screen.BFS()  # Compute the path
+        update_blocks_on_path(game, game.pathBFS, "redstone")  # Place redstone blocks
+        game.showBFS = True
+        game.showDFS = False
+        #game.pathDFS = None  # Reset the path
+        #update_blocks_on_path(game, game.pathDFS, "grass")  # Remove bluestone blocks
         map.texture = "minimapAlgorithmPathBFS.png"  # Update the minimap texture
 
     elif key == 'd' and mPressed:
         print("DFS Algorithm")
         map.texture = "minimap.png"  # Reset the minimap texture
-        game.path = None  # Reset the path
-        game.path = game.game_screen.DFS()  # Compute the path
-        update_blocks_on_path(game, game.path, "snow")  # Place bluestone blocks
+        game.pathDFS = game.game_screen.DFS()  # Compute the path
+        update_blocks_on_path(game, game.pathDFS, "bluestone")  # Place bluestone blocks
+        game.showBFS = False
+        game.showDFS = True
+        #game.pathBFS = None  # Reset the path
+        #update_blocks_on_path(game, game.pathBFS, "grass") # Remove redstone blocks
         map.texture = "minimapAlgorithmPathDFS.png"  # Update the minimap texture
 
     elif key == 'r':

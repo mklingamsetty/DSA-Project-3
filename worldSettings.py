@@ -35,7 +35,9 @@ class worldSettings:
             "darkstone" : load_texture("minecraft_starter/assets/textures/stone02.png"),
             "mud" : load_texture("minecraft_starter/assets/textures/groundMud.png"),
             "trimmedGrass" : load_texture("minecraft_starter/assets/textures/stone06.png"),
-            "snow" : load_texture("minecraft_starter/assets/textures/snow.png"), #BFS and DFS
+            "redstone" : load_texture("minecraft_starter/assets/textures/Red Brick.png"), #BFS
+            "bluestone" : load_texture("minecraft_starter/assets/textures/Blue Brick.png"), #DFS
+            "snow" : load_texture("minecraft_starter/assets/textures/snow.png"),
             # Add other block textures if needed
         }
 

@@ -365,11 +365,7 @@ def generateMap(tile_map, block_positions, obstacle_positions, home_tile_positio
         tile_map.append(row)
 
 def update_blocks_on_path(game, path, block_type):
-    """
-    Updates blocks in the 3D world along a given path.
-    """
     world_size = game.game_screen.settings.get_world_size()
-
     for x, z in path:
         # Ensure coordinates are within world bounds
         if 0 <= x < world_size and 0 <= z < world_size:
