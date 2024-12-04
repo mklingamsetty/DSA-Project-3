@@ -4,7 +4,10 @@ from worldSettings import *
 from ursina.prefabs.first_person_controller import FirstPersonController
 from PIL import Image, ImageDraw
 from collections import deque
+from ursina.prefabs.health_bar import HealthBar
 
+#class Player:
+    
 class GameScreen:
     def __init__(self):
         self.settings = worldSettings()
@@ -46,7 +49,9 @@ class GameScreen:
         )
 
         self.current_position = (int(self.player_spawn_x), int(self.player_spawn_z))
-        
+
+        #healthBar()
+
         self.MiniMap = Entity(
             parent=camera.ui,
             model='quad',
@@ -476,5 +481,14 @@ def update_blocks_on_path(game, path, block_type):
             # Persist in block_positions to ensure it isn't culled by render logic
             game.game_screen.block_positions[world_position] = False
 
-
-
+#Health bar function
+def healthBar():
+    health_bar = HealthBar(
+                value=100, 
+                position=(-0.8, 0.4), 
+                bar_color=color.blue, 
+                bar_texture="minecraft_starter/assets/textures/healthBar.png",
+                roundness=0.7, 
+                scale=(0.4, 0.05)
+            )
+    return health_bar

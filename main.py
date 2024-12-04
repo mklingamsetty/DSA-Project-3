@@ -1,5 +1,5 @@
 from ursina import *
-from ursina.prefabs.health_bar import HealthBar
+# from ursina.prefabs.health_bar import HealthBar
 from PIL import Image, ImageDraw
 import random
 import time
@@ -20,6 +20,7 @@ class Game:
         self.rectangle_entity = None
         self.map = Entity()
         self.mPressed = False
+        self.health_bar = self.create_health_bar()
         self.index = 0
         self.pathBFS = None
         self.pathDFS = None
@@ -35,6 +36,24 @@ class Game:
         self.backWall = Entity(model="cube", scale=(self.settings.get_world_size() + 1, self.settings.get_world_size(), 1), position=(self.settings.get_world_size() / 2, 0, -1), collider="box", visible=False)
 
         Sky(texture="minecraft_starter/assets/textures/nightSky.png")
+    def create_health_bar(self):
+        return HealthBar(
+                value=100, 
+                position=(-0.8, 0.4), 
+                bar_color=color.blue, 
+                bar_texture="minecraft_starter/assets/textures/healthBar.png",
+                roundness=0.7, 
+                scale=(0.4, 0.05)
+            )    
+
+    def toggle_health_bar(self, visible = True):
+        if visible == True:
+            if not self.health_bar:
+                self.health_bar = self.create_health_bar()
+        else:
+            if self.health_bar:
+                destroy(self.health_bar)
+                self.health_bar = None
 
     def update(self):       
         #Every frame, update the visible blocks
@@ -226,7 +245,6 @@ class Game:
 
 # Initialize the app
 app = Ursina()
-HB = HealthBar(value=100, position=(-0.8, 0.4), bar_color=color.red, bar_texture="minecraft_starter/assets/textures/healthBar.png", scale=(0.5, 0.1))
 window.exit_button.visible = True # Show the Red X window close button
 
 # Loading textures and worldGen must occur after app in initialized
@@ -239,12 +257,14 @@ def input(key):
     rectangle_entity = game.get_rectangle_entity()
     map = game.get_map()
     mPressed = game.get_mPressed()
-    global text_entity
+    global text_entity     
 
     if key == 'q':
         application.quit()
     elif key == 'm':
         mPressed = True
+        game.toggle_health_bar(visible=False)
+        destroy(game.health_bar)
         if not rectangle_entity:
             rectangle_entity = Button(
                 model='quad',
@@ -262,8 +282,8 @@ def input(key):
             )
 
             text_entity = Text(
-                text="Please Choose an Algorithm: \n Press 'B' for BFS \n Press 'D' for DFS",
-                position=(0.1, 0),
+                text="Please Choose an Algorithm: \n Press 'B' for BFS \n Press 'D' for DFS \n Press 'J' for Dijkstra's",
+                position=(0.09, 0),
                 parent=camera.ui,
                 scale=2,
                 color=color.white
@@ -298,6 +318,7 @@ def input(key):
         map.texture = "minimapAlgorithmPathDijkstra.png"  # Update the minimap texture
     elif key == 'r':
         map.texture = "minimap.png"  # Reset the minimap texture
+        game.toggle_health_bar(visible=True)
         if rectangle_entity:
             destroy(rectangle_entity)
             destroy(map)
